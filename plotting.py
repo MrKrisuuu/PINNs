@@ -1,63 +1,99 @@
-import torch
-from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
-from PINN import PINN, f
+import torch
+import imageio
+import numpy as np
 
 
-def plot_solution(pinn: PINN, x: torch.Tensor, t: torch.Tensor, figsize=(8, 6), dpi=100):
-    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-    x_raw = torch.unique(x).reshape(-1, 1)
-    t_raw = torch.unique(t)
-
-    def animate(i):
-        if not i % 10 == 0:
-            t_partial = torch.ones_like(x_raw) * t_raw[i]
-            f_final = f(pinn, x_raw, t_partial)
-            ax.clear()
-            ax.plot(
-                x_raw.detach().numpy(), f_final.detach().numpy(), label=f"Time {float(t[i])}"
-            )
-            ax.set_ylim(-1, 1)
-            ax.legend()
-
-    n_frames = t_raw.shape[0]
-    return FuncAnimation(fig, animate, frames=n_frames, interval=100, repeat=False)
+def print_loss(loss, pinn):
+    losses = loss.verbose(pinn)
+    print(f'Total loss: \t{losses[0]:.6f}    ({losses[0]:.3E})')
+    print(f'Interior loss: \t{losses[1]:.6f}    ({losses[1]:.3E})')
+    print(f'Initial loss: \t{losses[2]:.6f}    ({losses[2]:.3E})')
+    print(f'Bondary loss: \t{losses[3]:.6f}    ({losses[3]:.3E})')
+    print(f'Help loss: \t{losses[4]:.6f}    ({losses[4]:.3E})')
 
 
-def plot_color(z: torch.Tensor, x: torch.Tensor, y: torch.Tensor, n_points_x, n_points_t, title, figsize=(8, 6),
-               dpi=100, cmap="viridis"):
-    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-    z_raw = z.detach().cpu().numpy()
-    x_raw = x.detach().cpu().numpy()
-    y_raw = y.detach().cpu().numpy()
-    X = x_raw.reshape(n_points_x, n_points_t)
-    Y = y_raw.reshape(n_points_x, n_points_t)
-    Z = z_raw.reshape(n_points_x, n_points_t)
-    ax.set_title(title)
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    c = ax.pcolormesh(X, Y, Z, cmap=cmap)
-    fig.colorbar(c, ax=ax)
 
-    return fig
+def running_average(y, window=100):
+    cumsum = np.cumsum(np.insert(y, 0, 0))
+    return (cumsum[window:] - cumsum[:-window]) / float(window)
 
 
-def plot_3D(z: torch.Tensor, x: torch.Tensor, y: torch.Tensor, n_points_x, n_points_t, title, figsize=(8, 6), dpi=100,
-            limit=0.2):
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(projection='3d')
-    z_raw = z.detach().cpu().numpy()
-    x_raw = x.detach().cpu().numpy()
-    y_raw = y.detach().cpu().numpy()
-    X = x_raw.reshape(n_points_x, n_points_t)
-    Y = y_raw.reshape(n_points_x, n_points_t)
-    Z = z_raw.reshape(n_points_x, n_points_t)
-    ax.set_title(title)
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    # ZMIANA
-    ax.axes.set_zlim3d(bottom=-limit + 3, top=limit + 3)
+def plot_loss(loss_values, name="loss", window=100):
+    average_loss_total = running_average(loss_values[:, 0], window=window)
+    average_loss_residual = running_average(loss_values[:, 1], window=window)
+    average_loss_initial = running_average(loss_values[:, 2], window=window)
+    average_loss_boundary = running_average(loss_values[:, 3], window=window)
+    average_loss_help = running_average(loss_values[:, 4], window=window)
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
+    ax.set_title("Loss function (runnig average)")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    ax.plot(average_loss_total, label="Total loss")
+    ax.plot(average_loss_residual, label="Residual loss")
+    ax.plot(average_loss_initial, label="Initial loss")
+    ax.plot(average_loss_boundary, label="Boundary loss")
+    ax.plot(average_loss_help, label="Help loss")
+    ax.set_yscale('log')
+    plt.legend()
+    plt.savefig(f"./results/{name}.png")
+    plt.show()
 
-    c = ax.plot_surface(X, Y, Z)
 
-    return fig
+def plot_1D(pinn, t, name="1D"):
+    plt.plot(t.detach().cpu().numpy(), pinn(t).detach().cpu().numpy())
+    plt.savefig(f"./results/{name}.png")
+    plt.show()
+
+
+def plot_1D_in_2D(pinn, t, name="1D_2D"):
+    data = pinn(t).detach().cpu().numpy()
+    x = data[:, 0]
+    y = data[:, 1]
+    plt.plot(x, y)
+    plt.savefig(f"./results/{name}.png")
+    plt.show()
+
+
+def plot_2D(pinn, x, t, name="2D"):
+    files = []
+    for t_raw in t:
+        t0 = torch.full_like(x, t_raw.item())
+        plt.ylim(-2, 2)
+        plt.plot(x.detach().cpu().numpy(), pinn(x, t0).detach().cpu().numpy())
+        time = round(t_raw.item(), 2)
+        plt.title(f"Step: {time}")
+        plt.savefig(f"./plot2D/{time}.png")
+        files.append(f"./plot2D/{time}.png")
+        plt.clf()
+
+    with imageio.get_writer(f"./results/{name}.gif", mode="I") as writer:
+        for filename in files:
+            image = imageio.v2.imread(filename)
+            writer.append_data(image)
+
+
+def plot_3D(pinn, x, y, t, name="3D"):
+    files = []
+    x_grid, y_grid = torch.meshgrid(x.reshape(-1), y.reshape(-1), indexing="ij")
+    for t_raw in t:
+        t0 = torch.full_like(x_grid, t_raw.item())
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+        ax.axes.set_zlim3d(bottom=1, top=3)
+        ax.plot_surface(x_grid.detach().cpu().numpy(), y_grid.detach().cpu().numpy(),
+                        pinn(x_grid.reshape(-1, 1), y_grid.reshape(-1, 1), t0.reshape(-1, 1)).detach().cpu().numpy().reshape(x_grid.shape))
+        time = round(t_raw.item(), 2)
+        plt.title(f"Step: {time}")
+        plt.savefig(f"./plot3D/{time}.png")
+        files.append(f"./plot3D/{time}.png")
+        plt.clf()
+        plt.close()
+
+    with imageio.get_writer(f"./results/{name}.gif", mode="I") as writer:
+        for filename in files:
+            image = imageio.v2.imread(filename)
+            writer.append_data(image)
+
+
+
