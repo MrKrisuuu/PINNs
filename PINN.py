@@ -9,7 +9,7 @@ class PINN(nn.Module):
     to approximate the solution of the differential equation
     """
 
-    def __init__(self, input, output, num_hidden: int = 4, dim_hidden: int = 150, act=nn.Tanh()):
+    def __init__(self, input, output, num_hidden: int = 3, dim_hidden: int = 150, act=nn.Tanh()):
         super().__init__()
 
         self.input = input
@@ -98,7 +98,6 @@ def df(output: torch.Tensor, input: torch.Tensor, order: int = 1) -> torch.Tenso
             create_graph=True,
             retain_graph=True,
         )[0]
-
     return df_value
 
 

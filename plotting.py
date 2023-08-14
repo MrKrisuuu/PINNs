@@ -13,7 +13,6 @@ def print_loss(loss, pinn):
     print(f'Help loss: \t{losses[4]:.6f}    ({losses[4]:.3E})')
 
 
-
 def running_average(y, window=100):
     cumsum = np.cumsum(np.insert(y, 0, 0))
     return (cumsum[window:] - cumsum[:-window]) / float(window)
@@ -40,8 +39,12 @@ def plot_loss(loss_values, name="loss", window=100):
     plt.show()
 
 
-def plot_1D(pinn, t, name="1D"):
-    plt.plot(t.detach().cpu().numpy(), pinn(t).detach().cpu().numpy())
+def plot_1D(pinn, t, name="1D", labels=None, ylabel="Values"):
+    plt.plot(t.detach().cpu().numpy(), pinn(t).detach().cpu().numpy(), label=labels)
+    plt.xlabel("Time")
+    plt.ylabel(ylabel)
+    if labels:
+        plt.legend()
     plt.savefig(f"./results/{name}.png")
     plt.show()
 
@@ -51,6 +54,8 @@ def plot_1D_in_2D(pinn, t, name="1D_2D"):
     x = data[:, 0]
     y = data[:, 1]
     plt.plot(x, y)
+    plt.xlabel("X")
+    plt.ylabel("Y")
     plt.savefig(f"./results/{name}.png")
     plt.show()
 
@@ -63,6 +68,8 @@ def plot_2D(pinn, x, t, name="2D"):
         plt.plot(x.detach().cpu().numpy(), pinn(x, t0).detach().cpu().numpy())
         time = round(t_raw.item(), 2)
         plt.title(f"Step: {time}")
+        plt.xlabel("X")
+        plt.ylabel("Y")
         plt.savefig(f"./plot2D/{time}.png")
         files.append(f"./plot2D/{time}.png")
         plt.clf()
@@ -96,4 +103,10 @@ def plot_3D(pinn, x, y, t, name="3D"):
             writer.append_data(image)
 
 
+def plot_compare(data, time, labels, name=""):
+    for points, label in zip(data, labels):
+        plt.plot(time, points, label=label)
+    plt.title(name)
+    plt.legend()
+    plt.show()
 
