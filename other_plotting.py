@@ -31,7 +31,7 @@ def plot_SIR_number(pinn, t):
 
 def plot_Gravity_energy(pinn, t):
     r = (f(pinn, t, output_value=0) ** 2 + f(pinn, t, output_value=1) ** 2) ** (1 / 2)
-    val = (dfdt(pinn, t, output_value=0) ** 2 + dfdt(pinn, t, output_value=1) **2) / 2 - 1 / r
+    val = (dfdt(pinn, t, output_value=0) ** 2 + dfdt(pinn, t, output_value=1) ** 2) / 2 - 1 / r
     plt.plot([min(t.detach().cpu().numpy()), max(t.detach().cpu().numpy())], [-0.5, -0.5], color="black", linewidth=1)
     plt.plot(t.detach().cpu().numpy(), val.detach().cpu().numpy())
     plt.xlabel("Time")

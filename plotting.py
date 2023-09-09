@@ -35,6 +35,7 @@ def plot_loss(loss_values, name="loss", window=100):
     ax.plot(average_loss_help, label="Help loss")
     ax.set_yscale('log')
     plt.legend()
+    plt.grid(True)
     plt.savefig(f"./results/{name}.png")
     plt.show()
 
@@ -45,6 +46,7 @@ def plot_1D(pinn, t, name="1D", labels=None, ylabel="Values"):
     plt.ylabel(ylabel)
     if labels:
         plt.legend()
+    plt.grid(True)
     plt.savefig(f"./results/{name}.png")
     plt.show()
 
@@ -56,6 +58,7 @@ def plot_1D_in_2D(pinn, t, name="1D_2D"):
     plt.plot(x, y)
     plt.xlabel("X")
     plt.ylabel("Y")
+    plt.grid(True)
     plt.savefig(f"./results/{name}.png")
     plt.show()
 
@@ -70,6 +73,7 @@ def plot_2D(pinn, x, t, name="2D"):
         plt.title(f"Step: {time}")
         plt.xlabel("X")
         plt.ylabel("Y")
+        plt.grid(True)
         plt.savefig(f"./plot2D/{time}.png")
         files.append(f"./plot2D/{time}.png")
         plt.clf()
@@ -108,5 +112,16 @@ def plot_compare(data, time, labels, name=""):
         plt.plot(time, points, label=label)
     plt.title(name)
     plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def plot_difference(data, time, true, labels, name=""):
+    plt.plot([min(time), max(time)], [0, 0], color="black", linewidth=1)
+    for points, label in zip(data, labels):
+        plt.plot(time, points - true, label=label)
+    plt.title(name)
+    plt.legend()
+    plt.grid(True)
     plt.show()
 

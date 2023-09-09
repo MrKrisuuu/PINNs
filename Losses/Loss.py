@@ -6,15 +6,15 @@ import torch
 class Loss:
     def __init__(
             self,
-            *args: [float, float],
+            *args,
 
-            n_points: int,
-            weight_r: float = 1.0,
-            weight_b: float = 1.0,
-            weight_i: float = 1.0,
-            weight_h: float = 1.0,
+            n_points,
+            weight_r=1.0,
+            weight_b=1.0,
+            weight_i=1.0,
+            weight_h=1.0,
 
-            help: bool = False
+            help=False
     ):
         self.args = args
 
@@ -28,6 +28,7 @@ class Loss:
         self.help = help
 
     def residual_loss(self, pinn: PINN):
+        """
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -37,10 +38,11 @@ class Loss:
             x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-
+        """
         return torch.tensor(0)
 
     def initial_loss(self, pinn: PINN):
+        """
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -50,10 +52,11 @@ class Loss:
             x, y, t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-
+        """
         return torch.tensor(0)
 
     def boundary_loss(self, pinn: PINN):
+        """
         down, up, left, right, t = None, None, None, None, None
         if len(self.args) == 1:
             (t,) = get_boundary_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -63,10 +66,11 @@ class Loss:
             down, up, left, right = get_boundary_points(*self.args, n_points=self.n_points, device=pinn.device())
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-
+        """
         return torch.tensor(0)
 
     def help_loss(self, pinn: PINN):
+        """
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -76,7 +80,7 @@ class Loss:
             x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-
+        """
         return torch.tensor(0)
 
     def verbose(self, pinn: PINN):
@@ -105,7 +109,6 @@ class Loss:
     def __call__(self, pinn: PINN):
         """
         Allows you to use instance of this class as if it was a function:
-
         ```
             loss = Loss(*some_args)
             calculated_loss = loss(pinn)

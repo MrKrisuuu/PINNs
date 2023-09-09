@@ -4,7 +4,7 @@ from Losses.Loss import Loss
 
 
 class Loss_Tsunami(Loss):
-    def residual_loss(self, pinn: PINN):
+    def residual_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -24,7 +24,7 @@ class Loss_Tsunami(Loss):
 
         return loss.pow(2).mean()
 
-    def initial_loss(self, pinn: PINN):
+    def initial_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -39,7 +39,7 @@ class Loss_Tsunami(Loss):
 
         return loss.pow(2).mean()
 
-    def boundary_loss(self, pinn: PINN):
+    def boundary_loss(self, pinn):
         down, up, left, right, t = None, None, None, None, None
         if len(self.args) == 1:
             (t,) = get_boundary_points(*self.args, n_points=self.n_points, device=pinn.device())

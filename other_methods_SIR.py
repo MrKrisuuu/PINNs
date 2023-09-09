@@ -1,22 +1,30 @@
-import matplotlib.pyplot as plt
+import torch
+import scipy
 
 
-def fS(s, i, r):
-    b = 2
-    y = 1
+def fS(s, i, r, params=(2, 1)):
+    b, y = params
     return - b * i * s
 
 
-def fI(s, i, r):
-    b = 2
-    y = 1
+def fI(s, i, r, params=(2, 1)):
+    b, y = params
     return b * i * s - y * i
 
 
-def fR(s, i, r):
-    b = 2
-    y = 1
+def fR(s, i, r, params=(2, 1)):
+    b, y = params
     return y * i
+
+
+def SIR_equation(values, previous, h, params=(2, 1)):
+    s_n1, i_n1, r_n1 = values
+    s_n, i_n, r_n = previous
+    b, y = params
+    S = s_n1 - s_n + h * b * i_n1 * s_n1
+    I = i_n1 - i_n - h * b * i_n1 * s_n1 + h * y * i_n1
+    R = r_n1 - r_n - h * y * i_n1
+    return [S, I, R]
 
 
 def euler_SIR(time, h=0.01):
@@ -34,7 +42,24 @@ def euler_SIR(time, h=0.01):
         I.append(I[-1] + dI * h)
         R.append(R[-1] + dR * h)
         times.append(t)
-    return S, I, R, times
+    return torch.tensor(S), torch.tensor(I), torch.tensor(R), torch.tensor(times)
+
+
+def implictit_SIR(time, h=0.01):
+    S = [0.9]
+    I = [0.1]
+    R = [0.0]
+    times = [0]
+    t = 0
+    while t < time:
+        t += h
+        prev = (S[-1], I[-1], R[-1])
+        s, i, r = scipy.optimize.fsolve(SIR_equation, prev, args=(prev, h))
+        S.append(s)
+        I.append(i)
+        R.append(r)
+        times.append(t)
+    return torch.tensor(S), torch.tensor(I), torch.tensor(R), torch.tensor(times)
 
 
 def RK_SIR(time, h=0.01):
@@ -70,4 +95,4 @@ def RK_SIR(time, h=0.01):
         I.append(I[-1] + dI)
         R.append(R[-1] + dR)
         times.append(t)
-    return S, I, R, times
+    return torch.tensor(S), torch.tensor(I), torch.tensor(R), torch.tensor(times)

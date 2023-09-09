@@ -4,7 +4,7 @@ from Losses.Loss import Loss
 
 
 class Loss_SIR(Loss):
-    def residual_loss(self, pinn: PINN):
+    def residual_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -26,7 +26,7 @@ class Loss_SIR(Loss):
 
         return loss.mean()
 
-    def initial_loss(self, pinn: PINN):
+    def initial_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -42,5 +42,30 @@ class Loss_SIR(Loss):
         R = f(pinn, t, output_value=2) - 0
 
         loss = S.pow(2) + I.pow(2) + R.pow(2)
+
+        return loss.mean()
+
+    def help_loss(self, pinn: PINN):
+        x, y, t = None, None, None
+        if len(self.args) == 1:
+            t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
+        elif len(self.args) == 2:
+            x, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
+        elif len(self.args) == 3:
+            x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
+        else:
+            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
+
+        S = f(pinn, t, output_value=0)
+        I = f(pinn, t, output_value=1)
+        R = f(pinn, t, output_value=2)
+        val1 = S + I + R
+
+        dS = dfdt(pinn, t, output_value=0)
+        dI = dfdt(pinn, t, output_value=1)
+        dR = dfdt(pinn, t, output_value=2)
+        val2 = dS + dI + dR
+
+        loss = (val1 - 1).pow(2) + val2.pow(2)
 
         return loss.mean()

@@ -9,7 +9,7 @@ class PINN(nn.Module):
     to approximate the solution of the differential equation
     """
 
-    def __init__(self, input, output, num_hidden: int = 3, dim_hidden: int = 150, act=nn.Tanh()):
+    def __init__(self, input, output, num_hidden=3, dim_hidden=150, act=nn.Tanh()):
         super().__init__()
 
         self.input = input
@@ -60,7 +60,7 @@ class PINN(nn.Module):
         return next(self.parameters()).device
 
 
-def f(pinn: PINN, *args: torch.Tensor, output_value: int = 0) -> torch.Tensor:
+def f(pinn, *args, output_value=0) -> torch.Tensor:
     """Compute the value of the approximate solution from the NN model"""
     if len(args) == 1:
         if pinn.input == 1:
@@ -87,7 +87,7 @@ def f(pinn: PINN, *args: torch.Tensor, output_value: int = 0) -> torch.Tensor:
         raise Exception(f"Too many arguments: {len(args)}, expected 1, 2 or 3.")
 
 
-def df(output: torch.Tensor, input: torch.Tensor, order: int = 1) -> torch.Tensor:
+def df(output, input, order=1) -> torch.Tensor:
     """Compute neural network derivative with respect to input features using PyTorch autograd engine"""
     df_value = output
     for _ in range(order):
@@ -101,7 +101,7 @@ def df(output: torch.Tensor, input: torch.Tensor, order: int = 1) -> torch.Tenso
     return df_value
 
 
-def dfdt(pinn: PINN, *args: torch.Tensor, order: int = 1, output_value: int = 0):
+def dfdt(pinn, *args, order=1, output_value=0):
     if len(args) == 1:
         if pinn.input == 1:
             t = args[0]
@@ -128,7 +128,7 @@ def dfdt(pinn: PINN, *args: torch.Tensor, order: int = 1, output_value: int = 0)
     return df(f_value, t, order=order)
 
 
-def dfdx(pinn: PINN, *args: torch.Tensor, order: int = 1, output_value: int = 0):
+def dfdx(pinn, *args, order=1, output_value=0):
     if len(args) == 2:
         if pinn.input == 2:
             x = args[0]
@@ -149,7 +149,7 @@ def dfdx(pinn: PINN, *args: torch.Tensor, order: int = 1, output_value: int = 0)
     return df(f_value, x, order=order)
 
 
-def dfdy(pinn: PINN, *args: torch.Tensor, order: int = 1, output_value: int = 0):
+def dfdy(pinn, *args, order=1, output_value=0):
     if len(args) == 3:
         if pinn.input == 3:
             x = args[0]

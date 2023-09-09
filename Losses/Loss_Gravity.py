@@ -4,7 +4,7 @@ from Losses.Loss import Loss
 
 
 class Loss_Gravity(Loss):
-    def residual_loss(self, pinn: PINN):
+    def residual_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -23,7 +23,7 @@ class Loss_Gravity(Loss):
 
         return eq1.pow(2).mean() + eq2.pow(2).mean()
 
-    def initial_loss(self, pinn: PINN):
+    def initial_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -43,7 +43,7 @@ class Loss_Gravity(Loss):
 
         return cx1.pow(2).mean() + cx2.pow(2).mean() + cy1.pow(2).mean() + cy2.pow(2).mean()
 
-    def help_loss(self, pinn: PINN):
+    def help_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
