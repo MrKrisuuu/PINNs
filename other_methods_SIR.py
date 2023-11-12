@@ -31,18 +31,25 @@ def euler_SIR(time, h=0.01):
     S = [0.9]
     I = [0.1]
     R = [0.0]
+    dS = fS(S[-1], I[-1], R[-1])
+    dI = fI(S[-1], I[-1], R[-1])
+    dR = fR(S[-1], I[-1], R[-1])
     times = [0]
     t = 0
     while t < time:
-        t += h
-        dS = fS(S[-1], I[-1], R[-1])
-        dI = fI(S[-1], I[-1], R[-1])
-        dR = fR(S[-1], I[-1], R[-1])
         S.append(S[-1] + dS * h)
         I.append(I[-1] + dI * h)
         R.append(R[-1] + dR * h)
+        dS = fS(S[-1], I[-1], R[-1])
+        dI = fI(S[-1], I[-1], R[-1])
+        dR = fR(S[-1], I[-1], R[-1])
+        t += h
         times.append(t)
     return torch.tensor(S), torch.tensor(I), torch.tensor(R), torch.tensor(times)
+
+
+def semi_SIR(time, h=0.01):
+    pass
 
 
 def implictit_SIR(time, h=0.01):
@@ -52,12 +59,12 @@ def implictit_SIR(time, h=0.01):
     times = [0]
     t = 0
     while t < time:
-        t += h
         prev = (S[-1], I[-1], R[-1])
         s, i, r = scipy.optimize.fsolve(SIR_equation, prev, args=(prev, h))
         S.append(s)
         I.append(i)
         R.append(r)
+        t += h
         times.append(t)
     return torch.tensor(S), torch.tensor(I), torch.tensor(R), torch.tensor(times)
 
@@ -69,7 +76,6 @@ def RK_SIR(time, h=0.01):
     times = [0]
     t = 0
     while t < time:
-        t += h
 
         k1S = h * fS(S[-1], I[-1], R[-1])
         k1I = h * fI(S[-1], I[-1], R[-1])
@@ -94,5 +100,6 @@ def RK_SIR(time, h=0.01):
         S.append(S[-1] + dS)
         I.append(I[-1] + dI)
         R.append(R[-1] + dR)
+        t += h
         times.append(t)
     return torch.tensor(S), torch.tensor(I), torch.tensor(R), torch.tensor(times)

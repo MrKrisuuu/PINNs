@@ -36,13 +36,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
 
-def train_SIR(t_domain, epochs=1000):
+def train_SIR(t_domain, epochs=1000, help=False):
     pinn = PINN(1, 3).to(device)
 
     loss = Loss_SIR(
         t_domain,
         n_points=1000,
-        help=True
+        help=help
     )
 
     best_pinn, loss_values = train_model(pinn, loss_fn=loss, max_epochs=epochs)
@@ -54,7 +54,7 @@ def train_SIR(t_domain, epochs=1000):
 
 
 def train_Gravity(t_domain, epochs=5000):
-    pinn = PINN(1, 2).to(device)
+    pinn = PINN(1, 2, dim_hidden=200).to(device)
 
     loss = Loss_Gravity(
         t_domain,

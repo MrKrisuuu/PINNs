@@ -18,7 +18,7 @@ def running_average(y, window=100):
     return (cumsum[window:] - cumsum[:-window]) / float(window)
 
 
-def plot_loss(loss_values, name="loss", window=100):
+def plot_loss(loss_values, name="loss", window=100, save=None):
     average_loss_total = running_average(loss_values[:, 0], window=window)
     average_loss_residual = running_average(loss_values[:, 1], window=window)
     average_loss_initial = running_average(loss_values[:, 2], window=window)
@@ -36,30 +36,35 @@ def plot_loss(loss_values, name="loss", window=100):
     ax.set_yscale('log')
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"./results/{name}.png")
+    if save:
+        plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
-def plot_1D(pinn, t, name="1D", labels=None, ylabel="Values"):
+def plot_1D(pinn, t, name="1D", labels=None, ylabel="Values", save=None):
     plt.plot(t.detach().cpu().numpy(), pinn(t).detach().cpu().numpy(), label=labels)
+    plt.title(name)
     plt.xlabel("Time")
     plt.ylabel(ylabel)
     if labels:
         plt.legend()
     plt.grid(True)
-    plt.savefig(f"./results/{name}.png")
+    if save:
+        plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
-def plot_1D_in_2D(pinn, t, name="1D_2D"):
+def plot_1D_in_2D(pinn, t, name="1D_2D", save=None):
     data = pinn(t).detach().cpu().numpy()
     x = data[:, 0]
     y = data[:, 1]
     plt.plot(x, y)
+    plt.title(name)
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.grid(True)
-    plt.savefig(f"./results/{name}.png")
+    if save:
+        plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
@@ -107,21 +112,29 @@ def plot_3D(pinn, x, y, t, name="3D"):
             writer.append_data(image)
 
 
-def plot_compare(data, time, labels, name=""):
+def plot_compare(data, time, labels, name="", ylabel="Values", save=None):
     for points, label in zip(data, labels):
         plt.plot(time, points, label=label)
+    plt.xlabel("Time")
+    plt.ylabel(ylabel)
     plt.title(name)
     plt.legend()
     plt.grid(True)
+    if save:
+        plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
-def plot_difference(data, time, true, labels, name=""):
+def plot_difference(data, time, true, labels, name="", ylabel="Values", save=None):
     plt.plot([min(time), max(time)], [0, 0], color="black", linewidth=1)
     for points, label in zip(data, labels):
         plt.plot(time, points - true, label=label)
+    plt.xlabel("Time")
+    plt.ylabel(ylabel)
     plt.title(name)
     plt.legend()
     plt.grid(True)
+    if save:
+        plt.savefig(f"./results/{save}.png")
     plt.show()
 
