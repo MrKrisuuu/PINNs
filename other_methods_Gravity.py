@@ -26,17 +26,17 @@ def Gravity_equation(values, previous, h):
 def euler_Gravity(time, h=0.01):
     X = [1]
     Y = [0]
-    dX = [0]
-    dY = [1]
+    dX = 0
+    dY = 1
     times = [0]
     t = 0
     while t < time:
         ddX = fdX(X[-1], Y[-1])
         ddY = fdY(X[-1], Y[-1])
-        X.append(X[-1] + dX[-1] * h)
-        Y.append(Y[-1] + dY[-1] * h)
-        dX.append(dX[-1] + ddX * h)
-        dY.append(dY[-1] + ddY * h)
+        X.append(X[-1] + dX * h)
+        Y.append(Y[-1] + dY * h)
+        dX = dX + ddX * h
+        dY = dY + ddY * h
         t += h
         times.append(t)
     return torch.tensor(X), torch.tensor(Y), torch.tensor(times)
@@ -45,17 +45,17 @@ def euler_Gravity(time, h=0.01):
 def semi_Gravity(time, h=0.01):
     X = [1]
     Y = [0]
-    dX = [0]
-    dY = [1]
+    dX = 0
+    dY = 1
     times = [0]
     t = 0
     while t < time:
         ddX = fdX(X[-1], Y[-1])
         ddY = fdY(X[-1], Y[-1])
-        dX.append(dX[-1] + ddX * h)
-        dY.append(dY[-1] + ddY * h)
-        X.append(X[-1] + dX[-1] * h)
-        Y.append(Y[-1] + dY[-1] * h)
+        dX = dX + ddX * h
+        dY = dY + ddY * h
+        X.append(X[-1] + dX * h)
+        Y.append(Y[-1] + dY * h)
         t += h
         times.append(t)
     return torch.tensor(X), torch.tensor(Y), torch.tensor(times)
@@ -64,17 +64,17 @@ def semi_Gravity(time, h=0.01):
 def implicit_Gravity(time, h=0.01):
     X = [1]
     Y = [0]
-    dX = [0]
-    dY = [1]
+    dX = 0
+    dY = 1
     times = [0]
     t = 0
     while t < time:
-        prev = (X[-1], Y[-1], dX[-1], dY[-1])
+        prev = (X[-1], Y[-1], dX, dY)
         (x, y, dx, dy), xd, _, _ = scipy.optimize.fsolve(Gravity_equation, prev, args=(prev, h), full_output=True)
         X.append(x)
         Y.append(y)
-        dX.append(dx)
-        dY.append(dy)
+        dX = dx
+        dY = dy
         t += h
         times.append(t)
     return torch.tensor(X), torch.tensor(Y), torch.tensor(times)
@@ -83,29 +83,28 @@ def implicit_Gravity(time, h=0.01):
 def RK_Gravity(time, h=0.01):
     X = [1]
     Y = [0]
-    dX = [0]
-    dY = [1]
+    dX = 0
+    dY = 1
     times = [0]
     t = 0
     while t < time:
-
-        k1X = h * dX[-1]
-        k1Y = h * dY[-1]
+        k1X = h * dX
+        k1Y = h * dY
         k1dX = h * fdX(X[-1], Y[-1])
         k1dY = h * fdY(X[-1], Y[-1])
 
-        k2X = h * (dX[-1] + k1X/2)
-        k2Y = h * (dY[-1] + k1Y/2)
+        k2X = h * (dX + k1X/2)
+        k2Y = h * (dY + k1Y/2)
         k2dX = h * fdX(X[-1] + k1dX/2, Y[-1] + k1dX/2)
         k2dY = h * fdY(X[-1] + k1dY/2, Y[-1] + k1dY/2)
 
-        k3X = h * (dX[-1] + k2X/2)
-        k3Y = h * (dY[-1] + k2Y/2)
+        k3X = h * (dX + k2X/2)
+        k3Y = h * (dY + k2Y/2)
         k3dX = h * fdX(X[-1] + k2dX/2, Y[-1] + k2dX/2)
         k3dY = h * fdY(X[-1] + k2dY/2, Y[-1] + k2dY/2)
 
-        k4X = h * (dX[-1] + k3X)
-        k4Y = h * (dY[-1] + k3Y)
+        k4X = h * (dX + k3X)
+        k4Y = h * (dY + k3Y)
         k4dX = h * fdX(X[-1] + k3dX, Y[-1] + k3dX)
         k4dY = h * fdY(X[-1] + k3dY, Y[-1] + k3dY)
 
@@ -116,8 +115,8 @@ def RK_Gravity(time, h=0.01):
 
         X.append(X[-1] + d_X)
         Y.append(Y[-1] + d_Y)
-        dX.append(dX[-1] + d_dX)
-        dY.append(dY[-1] + d_dY)
+        dX = dX + d_dX
+        dY = dY + d_dY
         t += h
         times.append(t)
     return torch.tensor(X), torch.tensor(Y), torch.tensor(times)

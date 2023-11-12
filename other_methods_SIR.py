@@ -49,6 +49,7 @@ def euler_SIR(time, h=0.01):
 
 
 def semi_SIR(time, h=0.01):
+    # Is it possible to implement it?
     pass
 
 
