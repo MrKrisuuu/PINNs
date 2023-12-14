@@ -9,6 +9,15 @@ def get_derivatives(values, h):
     return torch.tensor(derivatives)
 
 
+def get_values_from_pinn(pinn, times):
+    values = pinn(times.reshape(-1, 1)).detach().cpu().numpy()
+    results = []
+    for i in range(len(values[0])):
+        value = torch.tensor(values[:, i])
+        results.append(value)
+    return tuple(results)
+
+
 def get_derivatives_from_pinn(pinn, times, derivative, order=1, output_value=0):
     t = times.reshape(-1, 1)
     t.requires_grad = True

@@ -1,9 +1,10 @@
 from get_points import get_boundary_points, get_initial_points, get_interior_points
 from PINN import PINN, f, dfdx, dfdy, dfdt
 from Losses.Loss import Loss
+import torch
 
 
-class Loss_Gravity(Loss):
+class Loss_VL(Loss):
     def residual_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
@@ -15,13 +16,14 @@ class Loss_Gravity(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        r = (f(pinn, t, output_value=0)**2 + f(pinn, t, output_value=1)**2)**(1/2)
+        a, b, c, d = (1, 1, 1, 2)
 
-        # GM = 1
-        eq1 = dfdt(pinn, t, order=2, output_value=0) + f(pinn, t, output_value=0) / r**3
-        eq2 = dfdt(pinn, t, order=2, output_value=1) + f(pinn, t, output_value=1) / r**3
+        prey = dfdt(pinn, t, output_value=0) - (a - b * f(pinn, t, output_value=1)) * f(pinn, t, output_value=0)
+        predator = dfdt(pinn, t, output_value=1) - (c * f(pinn, t, output_value=0) - d) * f(pinn, t, output_value=1)
 
-        return eq1.pow(2).mean() + eq2.pow(2).mean()
+        loss = prey.pow(2) + predator.pow(2)
+
+        return loss.mean()
 
     def initial_loss(self, pinn):
         x, y, t = None, None, None
@@ -34,16 +36,14 @@ class Loss_Gravity(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        e = 0
+        prey = f(pinn, t, output_value=0) - 1
+        predtor = f(pinn, t, output_value=1) - 1
 
-        cx1 = f(pinn, t, output_value=0) - (1 - e)
-        cx2 = dfdt(pinn, t, output_value=0)
-        cy1 = f(pinn, t, output_value=1)
-        cy2 = dfdt(pinn, t, output_value=1) - ((1+e)/(1-e))**(1/2)
+        loss = prey.pow(2) + predtor.pow(2)
 
-        return cx1.pow(2).mean() + cx2.pow(2).mean() + cy1.pow(2).mean() + cy2.pow(2).mean()
+        return loss.mean()
 
-    def help_loss(self, pinn):
+    def help_loss(self, pinn: PINN):
         x, y, t = None, None, None
         if len(self.args) == 1:
             t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
@@ -54,13 +54,12 @@ class Loss_Gravity(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        r = (f(pinn, t, output_value=0) ** 2 + f(pinn, t, output_value=1) ** 2) ** (1 / 2)
-        energy = (dfdt(pinn, t, output_value=0) ** 2 + dfdt(pinn, t, output_value=1) ** 2) / 2 - 1 / r
+        x = f(pinn, t, output_value=0)
+        y = f(pinn, t, output_value=1)
 
-        momentum = f(pinn, t, output_value=0) * dfdt(pinn, t, output_value=1) - \
-              f(pinn, t, output_value=1) * dfdt(pinn, t, output_value=0)
+        x = torch.where(x < 0, torch.tensor(0.001), x)
+        y = torch.where(y < 0, torch.tensor(0.001), y)
 
-        help1 = energy - (-0.5)
-        help2 = momentum - (1)
+        c = 2 * torch.log(x) - x + torch.log(y) - y
 
-        return help1.pow(2).mean() + help2.pow(2).mean()
+        return (c+2).pow(2).mean()

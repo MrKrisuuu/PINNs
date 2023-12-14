@@ -9,7 +9,7 @@ class PINN(nn.Module):
     to approximate the solution of the differential equation
     """
 
-    def __init__(self, input, output, num_hidden=3, dim_hidden=150, act=nn.Tanh()):
+    def __init__(self, input, output, num_hidden=3, dim_hidden=200, act=nn.Tanh()):
         super().__init__()
 
         self.input = input

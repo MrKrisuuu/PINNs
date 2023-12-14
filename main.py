@@ -1,20 +1,17 @@
-from train import train_SIR, train_Gravity, train_Tsunami
-from test import test_SIR, test_Gravity, test_Tsunami
-
+from train_models import train_SIR, train_Kepler, train_VL
+from test import test_SIR, test_Kepler, test_VL
 
 if __name__ == "__main__":
     t_domain_SIR = [0, 10]
 
-    t_domain_Gravity = [0, 20]
+    t_domain_Kepler = [0, 20]
 
-    x_domain_Tsunami = [0, 1]
-    y_domain_Tsunami = [0, 1]
-    t_domain_Tsunami = [0, 1]
+    t_domain_VL = [0, 10]
 
     loss_SIR, best_pinn_SIR, loss_values_SIR = train_SIR(t_domain_SIR, epochs=10)
-    loss_Gravity, best_pinn_Gravity, loss_values_Gravity = train_Gravity(t_domain_Gravity, epochs=10)
-    # loss_Tsunami, best_pinn_Tsunami, loss_values_Tsunami = train_Tsunami(x_domain_Tsunami, y_domain_Tsunami, t_domain_Tsunami)
+    loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, help=True, epochs=10)
+    loss_VL, best_pinn_VL, loss_values_VL = train_VL(t_domain_VL, help=True, epochs=10)
 
     test_SIR(loss_SIR, best_pinn_SIR, loss_values_SIR, t_domain_SIR)
-    test_Gravity(loss_Gravity, best_pinn_Gravity, loss_values_Gravity, t_domain_Gravity)
-    # test_Tsunami(loss_Tsunami, best_pinn_Tsunami, loss_values_Tsunami, x_domain_Tsunami, y_domain_Tsunami, t_domain_Tsunami)
+    test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler)
+    test_VL(loss_VL, best_pinn_VL, loss_values_VL, t_domain_VL)

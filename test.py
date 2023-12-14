@@ -1,14 +1,18 @@
 import torch
 
-from other_methods_SIR import euler_SIR, semi_SIR, implictit_SIR, RK_SIR
-from other_methods_Gravity import euler_Gravity, semi_Gravity, implicit_Gravity, RK_Gravity
-from utils import get_derivatives, get_derivatives_from_pinn
+from other_methods.other_methods_SIR import euler_SIR, implicit_SIR, RK_SIR
+from other_methods.other_methods_Kepler import euler_Kepler, semi_Kepler, implicit_Kepler, RK_Kepler, Verlet_Kepler
+from other_methods.other_methods_Volterra_Lotka import euler_VL, implicit_VL, RK_VL
+
+from utils import get_derivatives, get_values_from_pinn, get_derivatives_from_pinn
 from PINN import dfdt
 from plotting import print_loss, plot_loss, plot_1D, plot_1D_in_2D, plot_3D, plot_compare, plot_difference
-from other_plotting import plot_Gravity_energy, plot_Gravity_momentum, plot_Tsunami_level
 
 
 def test_SIR(loss, pinn, loss_values, t_domain):
+    def get_SIR_sum(S, I, R):
+        return S + I + R
+
     # Result of training
     print_loss(loss, pinn)
     plot_loss(loss_values, name="loss_SIR", save="loss_SIR")
@@ -19,128 +23,133 @@ def test_SIR(loss, pinn, loss_values, t_domain):
     h = 0.001
 
     # Euler
-    S_euler, I_euler, R_euler, times = euler_SIR(t_domain[1])
-    v_euler = S_euler + I_euler + R_euler
-    dS_euler = get_derivatives(S_euler, h)
-    dI_euler = get_derivatives(I_euler, h)
-    dR_euler = get_derivatives(R_euler, h)
-    d_euler = dS_euler + dI_euler + dR_euler
+    S_euler, I_euler, R_euler, times = euler_SIR(t_domain[1], h)
+    v_euler = get_SIR_sum(S_euler, I_euler, R_euler)
 
     # Semi-implicit Euler
-    # S_semi, I_semi, R_semi, times = semi_SIR(t_domain[1])
-    # v_semi = S_semi + I_semi + R_semi
-    # dS_semi = get_derivatives(S_semi, h)
-    # dI_semi = get_derivatives(I_semi, h)
-    # dR_semi = get_derivatives(R_semi, h)
-    # d_semi = dS_semi + dI_semi + dR_semi
+    # S_semi, I_semi, R_semi, times = semi_SIR(t_domain[1], h)
+    # v_semi = get_SIR_sum(S_semi, I_semi, R_semi)
 
     # Implicit Euler
-    S_implicit, I_implicit, R_implicit, times = implictit_SIR(t_domain[1])
-    v_implicit = S_implicit + I_implicit + R_implicit
-    dS_implicit = get_derivatives(S_implicit, h)
-    dI_implicit = get_derivatives(I_implicit, h)
-    dR_implicit = get_derivatives(R_implicit, h)
-    d_implicit = dS_implicit + dI_implicit + dR_implicit
+    S_implicit, I_implicit, R_implicit, times = implicit_SIR(t_domain[1], h)
+    v_implicit = get_SIR_sum(S_implicit, I_implicit, R_implicit)
 
     # RK
-    S_RK, I_RK, R_RK, _ = RK_SIR(t_domain[1])
-    v_RK = S_RK + I_RK + R_RK
-    dS_RK = get_derivatives(S_RK, h)
-    dI_RK = get_derivatives(I_RK, h)
-    dR_RK = get_derivatives(R_RK, h)
-    d_RK = dS_RK + dI_RK + dR_RK
+    S_RK, I_RK, R_RK, times = RK_SIR(t_domain[1], h)
+    v_RK = get_SIR_sum(S_RK, I_RK, R_RK)
 
     # PINN
-    SIR = pinn(times.reshape(-1, 1)).detach().cpu().numpy()
-    S_pinn = torch.tensor(SIR[:, 0])
-    I_pinn = torch.tensor(SIR[:, 1])
-    R_pinn = torch.tensor(SIR[:, 2])
-    v_pinn = S_pinn + I_pinn + R_pinn
-    dS_pinn = get_derivatives_from_pinn(pinn, times, dfdt, output_value=0)
-    dI_pinn = get_derivatives_from_pinn(pinn, times, dfdt, output_value=1)
-    dR_pinn = get_derivatives_from_pinn(pinn, times, dfdt, output_value=2)
-    d_pinn = dS_pinn + dI_pinn + dR_pinn
+    S_pinn, I_pinn, R_pinn = get_values_from_pinn(pinn, times)
+    v_pinn = get_SIR_sum(S_pinn, I_pinn, R_pinn)
 
     # Compare methods
     plot_compare([S_euler, S_implicit, S_RK, S_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Susceptible individuals", ylabel="Susceptible individuals", save="S")
     plot_compare([I_euler, I_implicit, I_RK, I_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Infectious individuals", ylabel="Infectious individuals", save="I")
     plot_compare([R_euler, R_implicit, R_RK, R_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Removed individuals", ylabel="Removed individuals", save="R")
     plot_difference([v_euler, v_implicit, v_RK, v_pinn], times, torch.full_like(times, 1), ["Euler", "Implicit", "RK4", "PINN"], name="Difference in total population", ylabel="Difference", save="Total")
-    plot_difference([d_euler, d_implicit, d_RK, d_pinn], times, torch.full_like(times, 0), ["Euler", "Implicit", "RK4", "PINN"], name="Difference in change of population", ylabel="Difference", save="Change")
 
 
-def test_Gravity(loss, pinn, loss_values, t_domain):
+def test_Kepler(loss, pinn, loss_values, t_domain):
+    def get_Kepler_energy(X, Y, dX, dY):
+        R = (X ** 2 + Y ** 2) ** (1 / 2)
+        return (dX ** 2 + dY ** 2) / 2 - 1 / R
+
+    def get_Kepler_moment(X, Y, dX, dY):
+        return X * dY - Y * dX
+
     # Results of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, name="loss_Gravity")
+    plot_loss(loss_values, name="loss_Kepler")
 
     t = torch.linspace(t_domain[0], t_domain[1], 101).reshape(-1, 1)
     t.requires_grad = True
 
     plot_1D_in_2D(pinn, t, name="Orbit")
-    plot_1D(pinn, t, name="Gravity (sins)", labels=["X", "Y"], ylabel="Value")
+    plot_1D(pinn, t, name="Kepler (sins)", labels=["X", "Y"], ylabel="Value")
 
     h = 0.001
 
     # Euler
-    X_euler, Y_euler, times = euler_Gravity(t_domain[1], h)
+    X_euler, Y_euler, times = euler_Kepler(t_domain[1], h)
     dX_euler = get_derivatives(X_euler, h)
     dY_euler = get_derivatives(Y_euler, h)
-    r_euler = (X_euler**2 + Y_euler**2)**(1/2)
-    energy_euler = (dX_euler**2 + dY_euler**2) / 2 - 1 / r_euler
-    momentum_euler = X_euler * dY_euler - Y_euler * dX_euler
+    energy_euler = get_Kepler_energy(X_euler, Y_euler, dX_euler, dY_euler)
+    momentum_euler = get_Kepler_moment(X_euler, Y_euler, dX_euler, dY_euler)
 
     # Semi-implicit Euler
-    X_semi, Y_semi, times = semi_Gravity(t_domain[1], h)
+    X_semi, Y_semi, times = semi_Kepler(t_domain[1], h)
     dX_semi = get_derivatives(X_semi, h)
     dY_semi = get_derivatives(Y_semi, h)
-    r_semi = (X_semi ** 2 + Y_semi ** 2) ** (1 / 2)
-    energy_semi = (dX_semi ** 2 + dY_semi ** 2) / 2 - 1 / r_semi
-    momentum_semi = X_semi * dY_semi - Y_semi * dX_semi
+    energy_semi = get_Kepler_energy(X_semi, Y_semi, dX_semi, dY_semi)
+    momentum_semi = get_Kepler_moment(X_semi, Y_semi, dX_semi, dY_semi)
 
     # Implicit Euler
-    X_implicit, Y_implicit, times = implicit_Gravity(t_domain[1], h)
+    X_implicit, Y_implicit, times = implicit_Kepler(t_domain[1], h)
     dX_implicit = get_derivatives(X_implicit, h)
     dY_implicit = get_derivatives(Y_implicit, h)
-    r_implicit = (X_implicit ** 2 + Y_implicit ** 2) ** (1 / 2)
-    energy_implicit = (dX_implicit ** 2 + dY_implicit ** 2) / 2 - 1 / r_implicit
-    momentum_implicit = X_implicit * dY_implicit - Y_implicit * dX_implicit
+    energy_implicit = get_Kepler_energy(X_implicit, Y_implicit, dX_implicit, dY_implicit)
+    momentum_implicit = get_Kepler_moment(X_implicit, Y_implicit, dX_implicit, dY_implicit)
 
     # RK
-    X_RK, Y_RK, _ = RK_Gravity(t_domain[1], h)
+    X_RK, Y_RK, _ = RK_Kepler(t_domain[1], h)
     dX_RK = get_derivatives(X_RK, h)
     dY_RK = get_derivatives(Y_RK, h)
-    r_RK = (X_RK ** 2 + Y_RK ** 2) ** (1 / 2)
-    energy_RK = (dX_RK ** 2 + dY_RK ** 2) / 2 - 1 / r_RK
-    momentum_RK = X_RK * dY_RK - Y_RK * dX_RK
+    energy_RK = get_Kepler_energy(X_RK, Y_RK, dX_RK, dY_RK)
+    momentum_RK = get_Kepler_moment(X_RK, Y_RK, dX_RK, dY_RK)
+
+    # Verlet
+    X_Verlet, Y_Verlet, _ = Verlet_Kepler(t_domain[1], h)
+    dX_Verlet = get_derivatives(X_Verlet, h)
+    dY_Verlet = get_derivatives(Y_Verlet, h)
+    energy_Verlet = get_Kepler_energy(X_Verlet, Y_Verlet, dX_Verlet, dY_Verlet)
+    momentum_Verlet = get_Kepler_moment(X_Verlet, Y_Verlet, dX_Verlet, dY_Verlet)
 
     # PINN
-    Gravity = pinn(times.reshape(-1, 1)).detach().cpu().numpy()
-    X_pinn = torch.tensor(Gravity[:, 0])
-    Y_pinn = torch.tensor(Gravity[:, 1])
+    X_pinn, Y_pinn = get_values_from_pinn(pinn, times)
     dX_pinn = get_derivatives_from_pinn(pinn, times, dfdt, output_value=0)
     dY_pinn = get_derivatives_from_pinn(pinn, times, dfdt, output_value=1)
-    r_pinn = (X_pinn**2 + Y_pinn**2)**(1/2)
-    energy_pinn = (dX_pinn**2 + dY_pinn**2) / 2 - 1 / r_pinn
-    momentum_pinn = X_pinn * dY_pinn - Y_pinn * dX_pinn
+    energy_pinn = get_Kepler_energy(X_pinn, Y_pinn, dX_pinn, dY_pinn)
+    momentum_pinn = get_Kepler_moment(X_pinn, Y_pinn, dX_pinn, dY_pinn)
 
     # Compare methods
-    plot_compare([X_euler, X_semi, X_implicit, X_RK, X_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "PINN"], name="X coordinate", ylabel="X")
-    plot_compare([Y_euler, Y_semi, Y_implicit, Y_RK, Y_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "PINN"], name="Y coordinate", ylabel="Y")
-    plot_difference([energy_euler, energy_semi, energy_implicit, energy_RK, energy_pinn], times, torch.full_like(times, -0.5), ["Euler", "Semi", "Implicit", "RK4", "PINN"], name="Difference in energy", ylabel="Difference")
-    plot_difference([momentum_euler, momentum_semi, momentum_implicit, momentum_RK, momentum_pinn], times, torch.full_like(times, 1), ["Euler", "Semi", "Implicit", "RK4", "PINN"], name="Difference in momentum", ylabel="Difference")
+    plot_compare([X_euler, X_semi, X_implicit, X_RK, X_Verlet, X_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="X coordinate", ylabel="X")
+    plot_compare([Y_euler, Y_semi, Y_implicit, Y_RK, Y_Verlet, Y_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Y coordinate", ylabel="Y")
+    plot_difference([energy_euler, energy_semi, energy_implicit, energy_RK, energy_Verlet, energy_pinn], times, torch.full_like(times, -0.5), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in energy", ylabel="Difference")
+    plot_difference([momentum_euler, momentum_semi, momentum_implicit, momentum_RK, momentum_Verlet, momentum_pinn], times, torch.full_like(times, 1), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in momentum", ylabel="Difference")
 
 
-def test_Tsunami(loss, pinn, loss_values, x_domain, y_domain, t_domain):
+def test_VL(loss, pinn, loss_values, t_domain, h=0.001):
+    def get_VL_c(X, Y):
+        return 2 * torch.log(X) - X + torch.log(Y) - Y
+
+    # Result of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, name="loss_Tsunami")
-
-    x = torch.linspace(x_domain[0], x_domain[1], 101).reshape(-1, 1)
-    x.requires_grad = True
-    y = torch.linspace(y_domain[0], y_domain[1], 101).reshape(-1, 1)
-    y.requires_grad = True
+    plot_loss(loss_values, name="loss_VL", save="loss_VL")
     t = torch.linspace(t_domain[0], t_domain[1], 101).reshape(-1, 1)
     t.requires_grad = True
+    plot_1D(pinn, t, name="VL", labels=["X", "Y"], ylabel="Population", save="VL_PINN")
 
-    plot_3D(pinn, x, y, t, name="Tsunami")
-    plot_Tsunami_level(pinn, x, y, t)
+    # Euler
+    X_euler, Y_euler, times = euler_VL(t_domain[1], h)
+    c_euler = get_VL_c(X_euler, Y_euler)
+
+    # Semi-implicit Euler
+    # X_semi, Y_semi, times = semi_VL(t_domain[1], h)
+    # c_semi = get_VL_c(X, Y)
+
+    # Implicit Euler
+    X_implicit, Y_implicit, times = implicit_VL(t_domain[1], h)
+    c_implicit = get_VL_c(X_implicit, Y_implicit)
+
+    # RK
+    X_RK, Y_RK, times = RK_VL(t_domain[1], h)
+    c_RK = get_VL_c(X_RK, Y_RK)
+
+    # PINN
+    X_pinn, Y_pinn = get_values_from_pinn(pinn, times)
+    c_pinn = get_VL_c(X_pinn, Y_pinn)
+
+    # Compare methods
+    plot_compare([X_euler, X_implicit, X_RK, X_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Prey individuals", ylabel="Prey individuals", save="Prey")
+    plot_compare([Y_euler, Y_implicit, Y_RK, Y_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Predators individuals", ylabel="Predators individuals", save="Predators")
+    plot_difference([c_euler, c_implicit, c_RK, c_pinn], times, torch.full_like(times, -2), ["Euler", "Implicit", "RK4", "PINN"], name="Constant in VL", ylabel="Difference", save="Constant")

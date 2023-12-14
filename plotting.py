@@ -137,4 +137,3 @@ def plot_difference(data, time, true, labels, name="", ylabel="Values", save=Non
     if save:
         plt.savefig(f"./results/{save}.png")
     plt.show()
-
