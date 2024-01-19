@@ -2,23 +2,24 @@ import torch
 
 from other_methods.other_methods_SIR import euler_SIR, implicit_SIR, RK_SIR
 from other_methods.other_methods_Kepler import euler_Kepler, semi_Kepler, implicit_Kepler, RK_Kepler, Verlet_Kepler
-from other_methods.other_methods_Volterra_Lotka import euler_VL, implicit_VL, RK_VL
+from other_methods.other_methods_Lotka_Volterra import euler_LV, implicit_LV, RK_LV
 
 from utils import get_derivatives, get_values_from_pinn, get_derivatives_from_pinn
 from PINN import dfdt
-from plotting import print_loss, plot_loss, plot_1D, plot_1D_in_2D, plot_3D, plot_compare, plot_difference
+from plotting import print_loss, plot_loss, plot_1D, plot_1D_in_2D, plot_compare, plot_difference
+
+from constants.constants_SIR import get_SIR_start_sum, get_SIR_sum
+from constants.constants_Kepler import get_Kepler_start_energy, get_Kepler_energy, get_Kepler_start_moment, get_Kepler_moment
+from constants.constants_LV import get_LV_start_c, get_LV_c
 
 
 def test_SIR(loss, pinn, loss_values, t_domain):
-    def get_SIR_sum(S, I, R):
-        return S + I + R
-
     # Result of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, name="loss_SIR", save="loss_SIR")
+    plot_loss(loss_values, name="loss_SIR")
     t = torch.linspace(t_domain[0], t_domain[1], 101).reshape(-1, 1)
     t.requires_grad = True
-    plot_1D(pinn, t, name="SIR", labels=["S", "I", "R"], ylabel="Population", save="SIR_PINN")
+    plot_1D(pinn, t, name="SIR", labels=["S", "I", "R"], ylabel="Population")
 
     h = 0.001
 
@@ -43,20 +44,13 @@ def test_SIR(loss, pinn, loss_values, t_domain):
     v_pinn = get_SIR_sum(S_pinn, I_pinn, R_pinn)
 
     # Compare methods
-    plot_compare([S_euler, S_implicit, S_RK, S_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Susceptible individuals", ylabel="Susceptible individuals", save="S")
-    plot_compare([I_euler, I_implicit, I_RK, I_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Infectious individuals", ylabel="Infectious individuals", save="I")
-    plot_compare([R_euler, R_implicit, R_RK, R_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Removed individuals", ylabel="Removed individuals", save="R")
-    plot_difference([v_euler, v_implicit, v_RK, v_pinn], times, torch.full_like(times, 1), ["Euler", "Implicit", "RK4", "PINN"], name="Difference in total population", ylabel="Difference", save="Total")
+    plot_compare([S_euler, S_implicit, S_RK, S_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Susceptible individuals", ylabel="Susceptible individuals")
+    plot_compare([I_euler, I_implicit, I_RK, I_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Infectious individuals", ylabel="Infectious individuals")
+    plot_compare([R_euler, R_implicit, R_RK, R_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Removed individuals", ylabel="Removed individuals")
+    plot_difference([v_euler, v_implicit, v_RK, v_pinn], times, torch.full_like(times, get_SIR_start_sum()), ["Euler", "Implicit", "RK4", "PINN"], name="Difference in total population", ylabel="Difference")
 
 
 def test_Kepler(loss, pinn, loss_values, t_domain):
-    def get_Kepler_energy(X, Y, dX, dY):
-        R = (X ** 2 + Y ** 2) ** (1 / 2)
-        return (dX ** 2 + dY ** 2) / 2 - 1 / R
-
-    def get_Kepler_moment(X, Y, dX, dY):
-        return X * dY - Y * dX
-
     # Results of training
     print_loss(loss, pinn)
     plot_loss(loss_values, name="loss_Kepler")
@@ -114,42 +108,39 @@ def test_Kepler(loss, pinn, loss_values, t_domain):
     # Compare methods
     plot_compare([X_euler, X_semi, X_implicit, X_RK, X_Verlet, X_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="X coordinate", ylabel="X")
     plot_compare([Y_euler, Y_semi, Y_implicit, Y_RK, Y_Verlet, Y_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Y coordinate", ylabel="Y")
-    plot_difference([energy_euler, energy_semi, energy_implicit, energy_RK, energy_Verlet, energy_pinn], times, torch.full_like(times, -0.5), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in energy", ylabel="Difference")
-    plot_difference([momentum_euler, momentum_semi, momentum_implicit, momentum_RK, momentum_Verlet, momentum_pinn], times, torch.full_like(times, 1), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in momentum", ylabel="Difference")
+    plot_difference([energy_euler, energy_semi, energy_implicit, energy_RK, energy_Verlet, energy_pinn], times, get_Kepler_start_energy(), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in energy", ylabel="Difference")
+    plot_difference([momentum_euler, momentum_semi, momentum_implicit, momentum_RK, momentum_Verlet, momentum_pinn], times, get_Kepler_start_moment(), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in momentum", ylabel="Difference")
 
 
-def test_VL(loss, pinn, loss_values, t_domain, h=0.001):
-    def get_VL_c(X, Y):
-        return 2 * torch.log(X) - X + torch.log(Y) - Y
-
+def test_LV(loss, pinn, loss_values, t_domain, h=0.001):
     # Result of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, name="loss_VL", save="loss_VL")
+    plot_loss(loss_values, name="loss_LV")
     t = torch.linspace(t_domain[0], t_domain[1], 101).reshape(-1, 1)
     t.requires_grad = True
-    plot_1D(pinn, t, name="VL", labels=["X", "Y"], ylabel="Population", save="VL_PINN")
+    plot_1D(pinn, t, name="LV", labels=["X", "Y"], ylabel="Population")
 
     # Euler
-    X_euler, Y_euler, times = euler_VL(t_domain[1], h)
-    c_euler = get_VL_c(X_euler, Y_euler)
+    X_euler, Y_euler, times = euler_LV(t_domain[1], h)
+    c_euler = get_LV_c(X_euler, Y_euler)
 
     # Semi-implicit Euler
-    # X_semi, Y_semi, times = semi_VL(t_domain[1], h)
-    # c_semi = get_VL_c(X, Y)
+    # X_semi, Y_semi, times = semi_LV(t_domain[1], h)
+    # c_semi = get_LV_c(X, Y)
 
     # Implicit Euler
-    X_implicit, Y_implicit, times = implicit_VL(t_domain[1], h)
-    c_implicit = get_VL_c(X_implicit, Y_implicit)
+    X_implicit, Y_implicit, times = implicit_LV(t_domain[1], h)
+    c_implicit = get_LV_c(X_implicit, Y_implicit)
 
     # RK
-    X_RK, Y_RK, times = RK_VL(t_domain[1], h)
-    c_RK = get_VL_c(X_RK, Y_RK)
+    X_RK, Y_RK, times = RK_LV(t_domain[1], h)
+    c_RK = get_LV_c(X_RK, Y_RK)
 
     # PINN
     X_pinn, Y_pinn = get_values_from_pinn(pinn, times)
-    c_pinn = get_VL_c(X_pinn, Y_pinn)
+    c_pinn = get_LV_c(X_pinn, Y_pinn)
 
     # Compare methods
-    plot_compare([X_euler, X_implicit, X_RK, X_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Prey individuals", ylabel="Prey individuals", save="Prey")
-    plot_compare([Y_euler, Y_implicit, Y_RK, Y_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Predators individuals", ylabel="Predators individuals", save="Predators")
-    plot_difference([c_euler, c_implicit, c_RK, c_pinn], times, torch.full_like(times, -2), ["Euler", "Implicit", "RK4", "PINN"], name="Constant in VL", ylabel="Difference", save="Constant")
+    plot_compare([X_euler, X_implicit, X_RK, X_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Prey individuals", ylabel="Prey individuals")
+    plot_compare([Y_euler, Y_implicit, Y_RK, Y_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Predators individuals", ylabel="Predators individuals")
+    plot_difference([c_euler, c_implicit, c_RK, c_pinn], times, get_LV_start_c(), ["Euler", "Implicit", "RK4", "PINN"], name="Constant in LV", ylabel="Difference")

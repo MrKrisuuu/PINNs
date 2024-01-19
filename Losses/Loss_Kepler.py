@@ -1,6 +1,8 @@
-from get_points import get_boundary_points, get_initial_points, get_interior_points
-from PINN import PINN, f, dfdx, dfdy, dfdt
+from get_points import get_initial_points, get_interior_points
+from PINN import f, dfdt
 from Losses.Loss import Loss
+from constants.initial_conditions import get_initial_conditions
+from constants.constants_Kepler import get_Kepler_start_energy, get_Kepler_energy, get_Kepler_start_moment, get_Kepler_moment
 
 
 class Loss_Kepler(Loss):
@@ -34,12 +36,12 @@ class Loss_Kepler(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        e = 0
+        (X, Y, dX, dY) = get_initial_conditions("Kepler")
 
-        cx1 = f(pinn, t, output_value=0) - (1 - e)
-        cx2 = dfdt(pinn, t, output_value=0)
-        cy1 = f(pinn, t, output_value=1)
-        cy2 = dfdt(pinn, t, output_value=1) - ((1+e)/(1-e))**(1/2)
+        cx1 = f(pinn, t, output_value=0) - X[0]
+        cx2 = dfdt(pinn, t, output_value=0) - dX
+        cy1 = f(pinn, t, output_value=1) - Y[0]
+        cy2 = dfdt(pinn, t, output_value=1) - dY
 
         return cx1.pow(2).mean() + cx2.pow(2).mean() + cy1.pow(2).mean() + cy2.pow(2).mean()
 
@@ -54,13 +56,12 @@ class Loss_Kepler(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        r = (f(pinn, t, output_value=0) ** 2 + f(pinn, t, output_value=1) ** 2) ** (1 / 2)
-        energy = (dfdt(pinn, t, output_value=0) ** 2 + dfdt(pinn, t, output_value=1) ** 2) / 2 - 1 / r
+        X = f(pinn, t, output_value=0)
+        dX = dfdt(pinn, t, output_value=0)
+        Y = f(pinn, t, output_value=1)
+        dY = dfdt(pinn, t, output_value=1)
 
-        momentum = f(pinn, t, output_value=0) * dfdt(pinn, t, output_value=1) - \
-              f(pinn, t, output_value=1) * dfdt(pinn, t, output_value=0)
-
-        help1 = energy - (-0.5)
-        help2 = momentum - (1)
+        help1 = get_Kepler_energy(X, Y, dX, dY) - get_Kepler_start_energy()
+        help2 = get_Kepler_moment(X, Y, dX, dY) - get_Kepler_start_moment()
 
         return help1.pow(2).mean() + help2.pow(2).mean()

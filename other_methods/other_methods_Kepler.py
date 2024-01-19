@@ -2,14 +2,7 @@ import torch
 import scipy
 
 from other_methods.other_methods_utils import get_RK_change, get_times
-
-
-def get_starting_values():
-    X = [1]
-    Y = [0]
-    dX = 0
-    dY = 1
-    return (X, Y, dX, dY)
+from constants.initial_conditions import get_initial_conditions
 
 
 def fdX(x, y):
@@ -42,7 +35,7 @@ def Kepler_equation(values, previous, h):
 
 
 def euler_Kepler(time, h=0.01):
-    X, Y, dX, dY = get_starting_values()
+    X, Y, dX, dY = get_initial_conditions("Kepler")
     times = get_times(time, h)
     for t in times[1:]:
         ddX = fdX(X[-1], Y[-1])
@@ -55,7 +48,7 @@ def euler_Kepler(time, h=0.01):
 
 
 def semi_Kepler(time, h=0.01):
-    X, Y, dX, dY = get_starting_values()
+    X, Y, dX, dY = get_initial_conditions("Kepler")
     times = get_times(time, h)
     for t in times[1:]:
         ddX = fdX(X[-1], Y[-1])
@@ -68,7 +61,7 @@ def semi_Kepler(time, h=0.01):
 
 
 def implicit_Kepler(time, h=0.01):
-    X, Y, dX, dY = get_starting_values()
+    X, Y, dX, dY = get_initial_conditions("Kepler")
     times = get_times(time, h)
     for t in times[1:]:
         prev = (X[-1], Y[-1], dX, dY)
@@ -81,7 +74,7 @@ def implicit_Kepler(time, h=0.01):
 
 
 def RK_Kepler(time, h=0.01):
-    X, Y, dX, dY = get_starting_values()
+    X, Y, dX, dY = get_initial_conditions("Kepler")
     times = get_times(time, h)
     for t in times[1:]:
         d_X = get_RK_change(fX, h, dX)
@@ -97,7 +90,7 @@ def RK_Kepler(time, h=0.01):
 
 
 def Verlet_Kepler(time, h=0.01):
-    X, Y, dX, dY = get_starting_values()
+    X, Y, dX, dY = get_initial_conditions("Kepler")
     times = get_times(time, h)
     for t in times[1:]:
         nextX = X[-1] + dX * h + fdX(X[-1], Y[-1]) / 2 * h * h

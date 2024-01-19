@@ -1,6 +1,8 @@
-from get_points import get_boundary_points, get_initial_points, get_interior_points
-from PINN import PINN, f, dfdx, dfdy, dfdt
+from get_points import get_initial_points, get_interior_points
+from PINN import PINN, f, dfdt
 from Losses.Loss import Loss
+from constants.initial_conditions import get_initial_conditions
+from constants.constants_SIR import get_SIR_start_sum, get_SIR_sum
 
 
 class Loss_SIR(Loss):
@@ -15,8 +17,8 @@ class Loss_SIR(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        b = 2
-        y = 1
+        (_, _, _, params) = get_initial_conditions("SIR")
+        (b, y) = params
 
         S = dfdt(pinn, t, output_value=0) + b * f(pinn, t, output_value=1) * f(pinn, t, output_value=0)
         I = dfdt(pinn, t, output_value=1) - b * f(pinn, t, output_value=1) * f(pinn, t, output_value=0) + y * f(pinn, t, output_value=1)
@@ -37,9 +39,11 @@ class Loss_SIR(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        S = f(pinn, t, output_value=0) - 0.90
-        I = f(pinn, t, output_value=1) - 0.10
-        R = f(pinn, t, output_value=2) - 0
+        (S, I, R, _) = get_initial_conditions("SIR")
+
+        S = f(pinn, t, output_value=0) - S[0]
+        I = f(pinn, t, output_value=1) - I[0]
+        R = f(pinn, t, output_value=2) - R[0]
 
         loss = S.pow(2) + I.pow(2) + R.pow(2)
 
@@ -59,13 +63,8 @@ class Loss_SIR(Loss):
         S = f(pinn, t, output_value=0)
         I = f(pinn, t, output_value=1)
         R = f(pinn, t, output_value=2)
-        val1 = S + I + R
+        val1 = get_SIR_sum(S, I, R)
 
-        dS = dfdt(pinn, t, output_value=0)
-        dI = dfdt(pinn, t, output_value=1)
-        dR = dfdt(pinn, t, output_value=2)
-        val2 = dS + dI + dR
-
-        loss = (val1 - 1).pow(2) + val2.pow(2)
+        loss = (val1 - get_SIR_start_sum()).pow(2)
 
         return loss.mean()

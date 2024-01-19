@@ -13,9 +13,23 @@ def print_loss(loss, pinn):
     print(f'Help loss: \t{losses[4]:.6f}    ({losses[4]:.3E})')
 
 
-def running_average(y, window=100):
-    cumsum = np.cumsum(np.insert(y, 0, 0))
-    return (cumsum[window:] - cumsum[:-window]) / float(window)
+def running_average(values, window=100):
+    s = int(window / 2)
+    avgs = []
+    p = max(0, -s)
+    q = min(len(values), s + 1)
+    current_sum = sum(values[p:q])
+    for i in range(0, len(values)):
+        new_p = max(0, i - s)
+        new_q = min(len(values), i + s + 1)
+        if new_p != p:
+            current_sum -= values[p]
+        if new_q != q:
+            current_sum += values[new_q - 1]
+        avgs.append(current_sum / (new_q - new_p + 1))
+        p = new_p
+        q = new_q
+    return avgs
 
 
 def plot_loss(loss_values, name="loss", window=100, save=None):
@@ -25,7 +39,7 @@ def plot_loss(loss_values, name="loss", window=100, save=None):
     average_loss_boundary = running_average(loss_values[:, 3], window=window)
     average_loss_help = running_average(loss_values[:, 4], window=window)
     fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
-    ax.set_title("Loss function (runnig average)")
+    ax.set_title("Loss function (running average)")
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Loss")
     ax.plot(average_loss_total, label="Total loss")
@@ -41,7 +55,7 @@ def plot_loss(loss_values, name="loss", window=100, save=None):
     plt.show()
 
 
-def plot_1D(pinn, t, name="1D", labels=None, ylabel="Values", save=None):
+def plot_1D(pinn, t, name="1D", labels=None, ylabel="Values"):
     plt.plot(t.detach().cpu().numpy(), pinn(t).detach().cpu().numpy(), label=labels)
     plt.title(name)
     plt.xlabel("Time")
@@ -49,12 +63,10 @@ def plot_1D(pinn, t, name="1D", labels=None, ylabel="Values", save=None):
     if labels:
         plt.legend()
     plt.grid(True)
-    if save:
-        plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
-def plot_1D_in_2D(pinn, t, name="1D_2D", save=None):
+def plot_1D_in_2D(pinn, t, name="1D_2D"):
     data = pinn(t).detach().cpu().numpy()
     x = data[:, 0]
     y = data[:, 1]
@@ -63,8 +75,6 @@ def plot_1D_in_2D(pinn, t, name="1D_2D", save=None):
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.grid(True)
-    if save:
-        plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
@@ -112,7 +122,7 @@ def plot_3D(pinn, x, y, t, name="3D"):
             writer.append_data(image)
 
 
-def plot_compare(data, time, labels, name="", ylabel="Values", save=None):
+def plot_compare(data, time, labels, name="", ylabel="Values"):
     for points, label in zip(data, labels):
         plt.plot(time, points, label=label)
     plt.xlabel("Time")
@@ -120,12 +130,10 @@ def plot_compare(data, time, labels, name="", ylabel="Values", save=None):
     plt.title(name)
     plt.legend()
     plt.grid(True)
-    if save:
-        plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
-def plot_difference(data, time, true, labels, name="", ylabel="Values", save=None):
+def plot_difference(data, time, true, labels, name="", ylabel="Values"):
     plt.plot([min(time), max(time)], [0, 0], color="black", linewidth=1)
     for points, label in zip(data, labels):
         plt.plot(time, points - true, label=label)
@@ -134,6 +142,4 @@ def plot_difference(data, time, true, labels, name="", ylabel="Values", save=Non
     plt.title(name)
     plt.legend()
     plt.grid(True)
-    if save:
-        plt.savefig(f"./results/{save}.png")
     plt.show()

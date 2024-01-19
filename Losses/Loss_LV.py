@@ -1,10 +1,12 @@
-from get_points import get_boundary_points, get_initial_points, get_interior_points
-from PINN import PINN, f, dfdx, dfdy, dfdt
+from get_points import get_initial_points, get_interior_points
+from PINN import PINN, f, dfdt
 from Losses.Loss import Loss
 import torch
+from constants.initial_conditions import get_initial_conditions
+from constants.constants_LV import get_LV_start_c, get_LV_c
 
 
-class Loss_VL(Loss):
+class Loss_LV(Loss):
     def residual_loss(self, pinn):
         x, y, t = None, None, None
         if len(self.args) == 1:
@@ -16,7 +18,8 @@ class Loss_VL(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        a, b, c, d = (1, 1, 1, 2)
+        (_, _, params) = get_initial_conditions("LV")
+        a, b, c, d = params
 
         prey = dfdt(pinn, t, output_value=0) - (a - b * f(pinn, t, output_value=1)) * f(pinn, t, output_value=0)
         predator = dfdt(pinn, t, output_value=1) - (c * f(pinn, t, output_value=0) - d) * f(pinn, t, output_value=1)
@@ -36,8 +39,10 @@ class Loss_VL(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        prey = f(pinn, t, output_value=0) - 1
-        predtor = f(pinn, t, output_value=1) - 1
+        (X, Y, _) = get_initial_conditions("LV")
+
+        prey = f(pinn, t, output_value=0) - X[0]
+        predtor = f(pinn, t, output_value=1) - Y[0]
 
         loss = prey.pow(2) + predtor.pow(2)
 
@@ -54,12 +59,7 @@ class Loss_VL(Loss):
         else:
             raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
 
-        x = f(pinn, t, output_value=0)
-        y = f(pinn, t, output_value=1)
+        X = f(pinn, t, output_value=0)
+        Y = f(pinn, t, output_value=1)
 
-        x = torch.where(x < 0, torch.tensor(0.001), x)
-        y = torch.where(y < 0, torch.tensor(0.001), y)
-
-        c = 2 * torch.log(x) - x + torch.log(y) - y
-
-        return (c+2).pow(2).mean()
+        return (get_LV_c(X, Y) - get_LV_start_c()).pow(2).mean()

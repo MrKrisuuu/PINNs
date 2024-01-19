@@ -2,13 +2,7 @@ import torch
 import scipy
 
 from other_methods.other_methods_utils import get_RK_change, get_times
-
-
-def get_starting_values():
-    X = [1]
-    Y = [1]
-    params = (1, 1, 1, 2)
-    return (X, Y, params)
+from constants.initial_conditions import get_initial_conditions
 
 
 def fX(x, y, params):
@@ -21,7 +15,7 @@ def fY(x, y, params):
     return (c * x - d) * y
 
 
-def VL_equation(values, previous, h, params):
+def LV_equation(values, previous, h, params):
     x_n1, y_n1 = values
     x_n, y_n = previous
     a, b, c, d = params
@@ -30,8 +24,8 @@ def VL_equation(values, previous, h, params):
     return [X, Y]
 
 
-def euler_VL(time, h=0.01):
-    X, Y, params = get_starting_values()
+def euler_LV(time, h=0.01):
+    X, Y, params = get_initial_conditions("LV")
     dX = fX(X[-1], Y[-1], params)
     dY = fY(X[-1], Y[-1], params)
     times = get_times(time, h)
@@ -43,24 +37,24 @@ def euler_VL(time, h=0.01):
     return torch.tensor(X), torch.tensor(Y), times
 
 
-def semi_VL(time, h=0.01):
+def semi_LV(time, h=0.01):
     # Is it possible to implement it?
     pass
 
 
-def implicit_VL(time, h=0.01):
-    X, Y, params = get_starting_values()
+def implicit_LV(time, h=0.01):
+    X, Y, params = get_initial_conditions("LV")
     times = get_times(time, h)
     for t in times[1:]:
         prev = (X[-1], Y[-1])
-        x, y = scipy.optimize.fsolve(VL_equation, prev, args=(prev, h, params))
+        x, y = scipy.optimize.fsolve(LV_equation, prev, args=(prev, h, params))
         X.append(x)
         Y.append(y)
     return torch.tensor(X), torch.tensor(Y), times
 
 
-def RK_VL(time, h=0.01):
-    X, Y, params = get_starting_values()
+def RK_LV(time, h=0.01):
+    X, Y, params = get_initial_conditions("LV")
     times = get_times(time, h)
     for t in times[1:]:
         dX = get_RK_change(fX, h, X[-1], Y[-1], params)

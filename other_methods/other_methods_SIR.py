@@ -2,14 +2,7 @@ import torch
 import scipy
 
 from other_methods.other_methods_utils import get_RK_change, get_times
-
-
-def get_starting_values():
-    S = [0.9]
-    I = [0.1]
-    R = [0.0]
-    params = (2, 1)
-    return (S, I, R, params)
+from constants.initial_conditions import get_initial_conditions
 
 
 def fS(s, i, r, params):
@@ -38,7 +31,7 @@ def SIR_equation(values, previous, h, params):
 
 
 def euler_SIR(time, h=0.01):
-    S, I, R, params = get_starting_values()
+    S, I, R, params = get_initial_conditions("SIR")
     dS = fS(S[-1], I[-1], R[-1], params)
     dI = fI(S[-1], I[-1], R[-1], params)
     dR = fR(S[-1], I[-1], R[-1], params)
@@ -59,7 +52,7 @@ def semi_SIR(time, h=0.01):
 
 
 def implicit_SIR(time, h=0.01):
-    S, I, R, params = get_starting_values()
+    S, I, R, params = get_initial_conditions("SIR")
     times = get_times(time, h)
     for t in times[1:]:
         prev = (S[-1], I[-1], R[-1])
@@ -71,7 +64,7 @@ def implicit_SIR(time, h=0.01):
 
 
 def RK_SIR(time, h=0.01):
-    S, I, R, params = get_starting_values()
+    S, I, R, params = get_initial_conditions("SIR")
     times = get_times(time, h)
     for t in times[1:]:
         dS = get_RK_change(fS, h, S[-1], I[-1], R[-1], params)
