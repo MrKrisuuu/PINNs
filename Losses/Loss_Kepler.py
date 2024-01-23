@@ -6,16 +6,15 @@ from constants.constants_Kepler import get_Kepler_start_energy, get_Kepler_energ
 
 
 class Loss_Kepler(Loss):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        dimension = 1
+        if len(self.args) != dimension:
+            raise Exception(f"This problem is in {dimension}D, not in {len(self.args)}D")
+
     def residual_loss(self, pinn):
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
+        t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         r = (f(pinn, t, output_value=0)**2 + f(pinn, t, output_value=1)**2)**(1/2)
 
@@ -26,15 +25,7 @@ class Loss_Kepler(Loss):
         return eq1.pow(2).mean() + eq2.pow(2).mean()
 
     def initial_loss(self, pinn):
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
+        t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         (X, Y, dX, dY) = get_initial_conditions("Kepler")
 
@@ -46,15 +37,7 @@ class Loss_Kepler(Loss):
         return cx1.pow(2).mean() + cx2.pow(2).mean() + cy1.pow(2).mean() + cy2.pow(2).mean()
 
     def help_loss(self, pinn):
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
+        t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         X = f(pinn, t, output_value=0)
         dX = dfdt(pinn, t, output_value=0)

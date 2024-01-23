@@ -17,7 +17,7 @@ def test_SIR(loss, pinn, loss_values, t_domain):
     # Result of training
     print_loss(loss, pinn)
     plot_loss(loss_values, name="loss_SIR")
-    t = torch.linspace(t_domain[0], t_domain[1], 101).reshape(-1, 1)
+    t = torch.linspace(t_domain[0], t_domain[1], 1001).reshape(-1, 1)
     t.requires_grad = True
     plot_1D(pinn, t, name="SIR", labels=["S", "I", "R"], ylabel="Population")
 
@@ -55,7 +55,7 @@ def test_Kepler(loss, pinn, loss_values, t_domain):
     print_loss(loss, pinn)
     plot_loss(loss_values, name="loss_Kepler")
 
-    t = torch.linspace(t_domain[0], t_domain[1], 101).reshape(-1, 1)
+    t = torch.linspace(t_domain[0], t_domain[1], 1001).reshape(-1, 1)
     t.requires_grad = True
 
     plot_1D_in_2D(pinn, t, name="Orbit")
@@ -116,7 +116,7 @@ def test_LV(loss, pinn, loss_values, t_domain, h=0.001):
     # Result of training
     print_loss(loss, pinn)
     plot_loss(loss_values, name="loss_LV")
-    t = torch.linspace(t_domain[0], t_domain[1], 101).reshape(-1, 1)
+    t = torch.linspace(t_domain[0], t_domain[1], 1001).reshape(-1, 1)
     t.requires_grad = True
     plot_1D(pinn, t, name="LV", labels=["X", "Y"], ylabel="Population")
 

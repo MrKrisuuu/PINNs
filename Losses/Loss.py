@@ -8,7 +8,7 @@ class Loss:
             self,
             *args,
 
-            n_points,
+            n_points=1000,
             weight_r=1.0,
             weight_b=1.0,
             weight_i=1.0,
@@ -18,7 +18,7 @@ class Loss:
     ):
         self.args = args
 
-        self.n_points = n_points
+        self.n_points = n_points//len(self.args)
 
         self.weight_r = weight_r
         self.weight_b = weight_b

@@ -41,7 +41,6 @@ def pretrain_model(nn_approximator, input, target, epochs=1_000):
 
         if (epoch) % 100 == 0:
             print(f"Epoch of pretrain: {epoch} - Loss: {float(loss):>7f}")
-            save_pinn(best_model, input, -epoch)
 
         if min_loss > float(loss):
             best_model = deepcopy(nn_approximator)
@@ -65,13 +64,12 @@ def train_model(nn_approximator, loss_fn, epochs=1_000, ratio=0.2, make_gif=Fals
             file = save_pinn(best_model, torch.linspace(loss_fn.args[0][0], loss_fn.args[0][1], 101).reshape(-1, 1).to(device), epoch)
             files.append(file)
 
-        if (epoch) % 100 == 0:
-            print(f"Epoch: {epoch} - Loss: {float(loss):>7f}")
-
         if min_loss > float(loss):
             min_loss = float(loss)
             print(f"Epoch: {epoch} - Loss: {float(loss):>7f}")
             best_model = deepcopy(nn_approximator)
+        elif (epoch) % 100 == 0:
+            print(f"Epoch: {epoch} - Loss: {float(loss):>7f}")
 
         loss_values.append(
             [loss.item(), residual_loss.item(), initial_loss.item(), boundary_loss.item(), help_loss.item()])

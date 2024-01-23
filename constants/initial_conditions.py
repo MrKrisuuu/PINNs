@@ -15,7 +15,7 @@ def get_initial_conditions(problem):
     elif problem == "LV":
         X = [1]
         Y = [1]
-        params = (1, 2, 3, 4)
+        params = (1, 1, 1, 2)
         return (X, Y, params)
     else:
         raise Exception("Wrong problem!")

@@ -8,9 +8,9 @@ if __name__ == "__main__":
 
     t_domain_LV = [0, 10]
 
-    # loss_SIR, best_pinn_SIR, loss_values_SIR = train_SIR(t_domain_SIR, help=True, epochs=10)
-    # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, help=True, epochs=10)
-    loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, help=True, epochs=10)
+    # loss_SIR, best_pinn_SIR, loss_values_SIR = train_SIR(t_domain_SIR, help=True, epochs=1000)
+    # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, help=True, epochs=1000)
+    loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, help=True, epochs=1000)
 
     # test_SIR(loss_SIR, best_pinn_SIR, loss_values_SIR, t_domain_SIR)
     # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler)

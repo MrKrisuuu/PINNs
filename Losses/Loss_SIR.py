@@ -6,16 +6,15 @@ from constants.constants_SIR import get_SIR_start_sum, get_SIR_sum
 
 
 class Loss_SIR(Loss):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        dimension = 1
+        if len(self.args) != dimension:
+            raise Exception(f"This problem is in {dimension}D, not in {len(self.args)}D")
+
     def residual_loss(self, pinn):
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
+        t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         (_, _, _, params) = get_initial_conditions("SIR")
         (b, y) = params
@@ -29,15 +28,7 @@ class Loss_SIR(Loss):
         return loss.mean()
 
     def initial_loss(self, pinn):
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
+        t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         (S, I, R, _) = get_initial_conditions("SIR")
 
@@ -50,15 +41,7 @@ class Loss_SIR(Loss):
         return loss.mean()
 
     def help_loss(self, pinn: PINN):
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
+        t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         S = f(pinn, t, output_value=0)
         I = f(pinn, t, output_value=1)

@@ -16,9 +16,13 @@ def train_SIR(t_domain, epochs=1000, pretrain_epochs=1000, help=False, make_gif=
 
     loss = Loss_SIR(
         t_domain,
-        n_points=1000,
         help=help
     )
+
+    S, I, R, times = euler_SIR(t_domain[1])
+    results = torch.stack((S, I, R), dim=1).to(device)
+    times = times.reshape(-1, 1).to(device)
+    pinn, loss_values = pretrain_model(pinn, times, results, epochs=pretrain_epochs)
 
     best_pinn, loss_values = train_model(pinn, loss_fn=loss, epochs=epochs, make_gif=make_gif)
     best_pinn = best_pinn.cpu()
@@ -33,14 +37,13 @@ def train_Kepler(t_domain, epochs=20000, pretrain_epochs=5000, help=False, make_
 
     loss = Loss_Kepler(
         t_domain,
-        n_points=1000,
         help=help
     )
 
-    # X, Y, times = euler_Kepler(t_domain[1])
-    # results = torch.stack((X, Y), dim=1).to(device)
-    # times = times.reshape(-1, 1).to(device)
-    # pinn, loss_values = pretrain_model(pinn, times, results, epochs=pretrain_epochs)
+    X, Y, times = euler_Kepler(t_domain[1])
+    results = torch.stack((X, Y), dim=1).to(device)
+    times = times.reshape(-1, 1).to(device)
+    pinn, loss_values = pretrain_model(pinn, times, results, epochs=pretrain_epochs)
 
     best_pinn, loss_values = train_model(pinn, loss_fn=loss, epochs=epochs, make_gif=make_gif)
     best_pinn = best_pinn.cpu()
@@ -55,14 +58,13 @@ def train_LV(t_domain, epochs=20000, pretrain_epochs=5000, help=False, make_gif=
 
     loss = Loss_LV(
         t_domain,
-        n_points=1000,
         help=help
     )
 
-    # X, Y, times = euler_LV(t_domain[1])
-    # results = torch.stack((X, Y), dim=1).to(device)
-    # times = times.reshape(-1, 1).to(device)
-    # pinn, loss_values = pretrain_model(pinn, times, results, epochs=pretrain_epochs)
+    X, Y, times = euler_LV(t_domain[1])
+    results = torch.stack((X, Y), dim=1).to(device)
+    times = times.reshape(-1, 1).to(device)
+    pinn, loss_values = pretrain_model(pinn, times, results, epochs=pretrain_epochs)
 
     best_pinn, loss_values = train_model(pinn, loss_fn=loss, epochs=epochs, make_gif=make_gif)
     best_pinn = best_pinn.cpu()
