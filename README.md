@@ -8,5 +8,9 @@ The best example is the Lotka-Volterra equation (predator-prey model), where add
     \frac{dy}{dt} &= (\gamma x-\delta)y
 \end{align*}
 ```
+These equations hold:
+```math
+\[-\alpha ln(y) + \beta y + \gamma x - \delta ln(x) = Const\]
+````
 
 You can see this in the charts below.
