@@ -14,7 +14,9 @@ These equations hold:
 ````
 
 Training and comparison with numerical methods (step is h=0.001) are below:
-
+<p align="center">
+  <img src="[https://picsum.photos/460/300](https://github.com/MrKrisuuu/PINNs/assets/92759002/f410b055-a01c-4e25-b0e0-031eb77cd917)">
+</p>
 ![LV_help_loss](https://github.com/MrKrisuuu/PINNs/assets/92759002/f410b055-a01c-4e25-b0e0-031eb77cd917)
 ![LV_help_pinn_result](https://github.com/MrKrisuuu/PINNs/assets/92759002/9b6b7a9e-69a4-493e-bb7b-e4cd13399dfa)
 ![LV_help_predator](https://github.com/MrKrisuuu/PINNs/assets/92759002/17948b4f-e4fc-4b96-a8ad-26afdcd51884)
