@@ -15,7 +15,7 @@ These equations hold:
 
 Training and comparison with numerical methods (step is h=0.001) are below:
 <p align="center">
-  <img width="460" height="300" src="[https://picsum.photos/460/300](https://github.com/MrKrisuuu/PINNs/assets/92759002/f410b055-a01c-4e25-b0e0-031eb77cd917)">
+  <img width="460" height="300" src="https://github.com/MrKrisuuu/PINNs/assets/92759002/f410b055-a01c-4e25-b0e0-031eb77cd917">
 </p>
 
 ![LV_help_loss](https://github.com/MrKrisuuu/PINNs/assets/92759002/f410b055-a01c-4e25-b0e0-031eb77cd917)
