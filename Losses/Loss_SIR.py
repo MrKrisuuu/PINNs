@@ -40,7 +40,7 @@ class Loss_SIR(Loss):
 
         return loss.mean()
 
-    def help_loss(self, pinn: PINN):
+    def invariant_loss(self, pinn: PINN):
         t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         S = f(pinn, t, output_value=0)

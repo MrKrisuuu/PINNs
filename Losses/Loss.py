@@ -14,18 +14,18 @@ class Loss:
             weight_i=1.0,
             weight_h=1.0,
 
-            help=False
+            invariant=False
     ):
         self.args = args
 
-        self.n_points = n_points//len(self.args)
+        self.n_points = round(n_points**(1/len(self.args)))
 
         self.weight_r = weight_r
         self.weight_b = weight_b
         self.weight_i = weight_i
         self.weight_h = weight_h
 
-        self.help = help
+        self.invariant = invariant
 
     def residual_loss(self, pinn: PINN):
         """
@@ -69,7 +69,7 @@ class Loss:
         """
         return torch.tensor(0)
 
-    def help_loss(self, pinn: PINN):
+    def invariant_loss(self, pinn: PINN):
         """
         x, y, t = None, None, None
         if len(self.args) == 1:
@@ -98,13 +98,13 @@ class Loss:
             self.weight_i * initial_loss + \
             self.weight_b * boundary_loss
 
-        if self.help:
-            help_loss = self.help_loss(pinn)
-            final_loss += self.weight_h * help_loss
+        if self.invariant:
+            invariant_loss = self.invariant_loss(pinn)
+            final_loss += self.weight_h * invariant_loss
         else:
-            help_loss = torch.tensor(0)
+            invariant_loss = torch.tensor(0)
 
-        return final_loss, residual_loss, initial_loss, boundary_loss, help_loss
+        return final_loss, residual_loss, initial_loss, boundary_loss, invariant_loss
 
     def __call__(self, pinn: PINN):
         """

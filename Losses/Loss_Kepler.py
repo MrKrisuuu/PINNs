@@ -36,7 +36,7 @@ class Loss_Kepler(Loss):
 
         return cx1.pow(2).mean() + cx2.pow(2).mean() + cy1.pow(2).mean() + cy2.pow(2).mean()
 
-    def help_loss(self, pinn):
+    def invariant_loss(self, pinn):
         t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         X = f(pinn, t, output_value=0)
@@ -44,7 +44,7 @@ class Loss_Kepler(Loss):
         Y = f(pinn, t, output_value=1)
         dY = dfdt(pinn, t, output_value=1)
 
-        help1 = get_Kepler_energy(X, Y, dX, dY) - get_Kepler_start_energy()
-        help2 = get_Kepler_moment(X, Y, dX, dY) - get_Kepler_start_moment()
+        invariant1 = get_Kepler_energy(X, Y, dX, dY) - get_Kepler_start_energy()
+        invariant2 = get_Kepler_moment(X, Y, dX, dY) - get_Kepler_start_moment()
 
-        return help1.pow(2).mean() + help2.pow(2).mean()
+        return invariant1.pow(2).mean() + invariant2.pow(2).mean()

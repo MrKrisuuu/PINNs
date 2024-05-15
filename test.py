@@ -13,15 +13,13 @@ from constants.constants_Kepler import get_Kepler_start_energy, get_Kepler_energ
 from constants.constants_LV import get_LV_start_c, get_LV_c
 
 
-def test_SIR(loss, pinn, loss_values, t_domain):
+def test_SIR(loss, pinn, loss_values, t_domain, h=0.001, mod=["", ""]):
     # Result of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, name="loss_SIR")
+    plot_loss(loss_values, title="SIR model", save="SIR_loss")
     t = torch.linspace(t_domain[0], t_domain[1], 1001).reshape(-1, 1)
     t.requires_grad = True
-    plot_1D(pinn, t, name="SIR", labels=["S", "I", "R"], ylabel="Population")
-
-    h = 0.001
+    plot_1D(pinn, t, title="SIR model", save="SIR_pinn_result", labels=["S", "I", "R"], ylabel="Population")
 
     # Euler
     S_euler, I_euler, R_euler, times = euler_SIR(t_domain[1], h)
@@ -44,24 +42,20 @@ def test_SIR(loss, pinn, loss_values, t_domain):
     v_pinn = get_SIR_sum(S_pinn, I_pinn, R_pinn)
 
     # Compare methods
-    plot_compare([S_euler, S_implicit, S_RK, S_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Susceptible individuals", ylabel="Susceptible individuals")
-    plot_compare([I_euler, I_implicit, I_RK, I_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Infectious individuals", ylabel="Infectious individuals")
-    plot_compare([R_euler, R_implicit, R_RK, R_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Removed individuals", ylabel="Removed individuals")
-    plot_difference([v_euler, v_implicit, v_RK, v_pinn], times, torch.full_like(times, get_SIR_start_sum()), ["Euler", "Implicit", "RK4", "PINN"], name="Difference in total population", ylabel="Difference")
+    plot_compare([S_euler, S_implicit, S_RK, S_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], title="Susceptible individuals", ylabel="Susceptible individuals", save="SIR_S")
+    plot_compare([I_euler, I_implicit, I_RK, I_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], title="Infectious individuals", ylabel="Infectious individuals", save="SIR_I")
+    plot_compare([R_euler, R_implicit, R_RK, R_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], title="Removed individuals", ylabel="Removed individuals", save="SIR_R")
+    plot_difference([v_euler, v_implicit, v_RK, v_pinn], times, torch.full_like(times, get_SIR_start_sum()), ["Euler", "Implicit", "RK4", "PINN"], title="Difference in total population", ylabel="Difference", save="SIR_constant")
 
 
-def test_Kepler(loss, pinn, loss_values, t_domain):
+def test_Kepler(loss, pinn, loss_values, t_domain, h=0.001, mod=["", ""]):
     # Results of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, name="loss_Kepler")
-
+    plot_loss(loss_values, title=f"Kepler’s problem{mod[0]}", save=f"Kepler{mod[1]}_loss")
     t = torch.linspace(t_domain[0], t_domain[1], 1001).reshape(-1, 1)
     t.requires_grad = True
-
-    plot_1D_in_2D(pinn, t, name="Orbit")
-    plot_1D(pinn, t, name="Kepler (sins)", labels=["X", "Y"], ylabel="Value")
-
-    h = 0.001
+    plot_1D_in_2D(pinn, t, title=f"Orbit{mod[0]}", save=f"Kepler{mod[1]}_pinn_orbit")
+    plot_1D(pinn, t, labels=["X", "Y"], ylabel="Value", title="Kepler (sins)", save=f"Kepler{mod[1]}_pinn_result")
 
     # Euler
     X_euler, Y_euler, times = euler_Kepler(t_domain[1], h)
@@ -106,19 +100,19 @@ def test_Kepler(loss, pinn, loss_values, t_domain):
     momentum_pinn = get_Kepler_moment(X_pinn, Y_pinn, dX_pinn, dY_pinn)
 
     # Compare methods
-    plot_compare([X_euler, X_semi, X_implicit, X_RK, X_Verlet, X_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="X coordinate", ylabel="X")
-    plot_compare([Y_euler, Y_semi, Y_implicit, Y_RK, Y_Verlet, Y_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Y coordinate", ylabel="Y")
-    plot_difference([energy_euler, energy_semi, energy_implicit, energy_RK, energy_Verlet, energy_pinn], times, get_Kepler_start_energy(), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in energy", ylabel="Difference")
-    plot_difference([momentum_euler, momentum_semi, momentum_implicit, momentum_RK, momentum_Verlet, momentum_pinn], times, get_Kepler_start_moment(), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], name="Difference in momentum", ylabel="Difference")
+    plot_compare([X_euler, X_semi, X_implicit, X_RK, X_Verlet, X_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], title=f"X coordinate{mod[0]}", ylabel="X", save=f"Kepler{mod[1]}_X")
+    plot_compare([Y_euler, Y_semi, Y_implicit, Y_RK, Y_Verlet, Y_pinn], times, ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], title=f"Y coordinate{mod[0]}", ylabel="Y", save=f"Kepler{mod[1]}_Y")
+    plot_difference([energy_euler, energy_semi, energy_implicit, energy_RK, energy_Verlet, energy_pinn], times, get_Kepler_start_energy(), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], title=f"Difference in energy{mod[0]}", ylabel="Difference", save=f"Kepler{mod[1]}_energy")
+    plot_difference([momentum_euler, momentum_semi, momentum_implicit, momentum_RK, momentum_Verlet, momentum_pinn], times, get_Kepler_start_moment(), ["Euler", "Semi", "Implicit", "RK4", "Verlet", "PINN"], title=f"Difference in momentum{mod[0]}", ylabel="Difference", save=f"Kepler{mod[1]}_momentum")
 
 
-def test_LV(loss, pinn, loss_values, t_domain, h=0.001):
+def test_LV(loss, pinn, loss_values, t_domain, h=0.001, mod=["", ""]):
     # Result of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, name="loss_LV")
+    plot_loss(loss_values, title=f"Volterra-Lotka problem{mod[0]}", save=f"LV{mod[1]}_loss")
     t = torch.linspace(t_domain[0], t_domain[1], 1001).reshape(-1, 1)
     t.requires_grad = True
-    plot_1D(pinn, t, name="LV", labels=["X", "Y"], ylabel="Population")
+    plot_1D(pinn, t, title=f"Volterra-Lotka problem{mod[0]}", labels=["X", "Y"], ylabel="Population", save=f"LV{mod[1]}_pinn_result")
 
     # Euler
     X_euler, Y_euler, times = euler_LV(t_domain[1], h)
@@ -141,6 +135,6 @@ def test_LV(loss, pinn, loss_values, t_domain, h=0.001):
     c_pinn = get_LV_c(X_pinn, Y_pinn)
 
     # Compare methods
-    plot_compare([X_euler, X_implicit, X_RK, X_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Prey individuals", ylabel="Prey individuals")
-    plot_compare([Y_euler, Y_implicit, Y_RK, Y_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], name="Predators individuals", ylabel="Predators individuals")
-    plot_difference([c_euler, c_implicit, c_RK, c_pinn], times, get_LV_start_c(), ["Euler", "Implicit", "RK4", "PINN"], name="Constant in LV", ylabel="Difference")
+    plot_compare([X_euler, X_implicit, X_RK, X_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], title="Prey individuals", ylabel="Prey individuals", save=f"LV{mod[1]}_prey")
+    plot_compare([Y_euler, Y_implicit, Y_RK, Y_pinn], times, ["Euler", "Implicit", "RK4", "PINN"], title="Predators individuals", ylabel="Predators individuals", save=f"LV{mod[1]}_predator")
+    plot_difference([c_euler, c_implicit, c_RK, c_pinn], times, get_LV_start_c(), ["Euler", "Implicit", "RK4", "PINN"], title="Constant in LV", ylabel="Difference", save=f"LV{mod[1]}_constant")

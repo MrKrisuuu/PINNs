@@ -1,6 +1,5 @@
 import torch
 
-
 def get_derivatives(values, h):
     derivatives = [(-values[2] + 3*values[1] - 2*values[0]) / h]
     for i in range(1, len(values) - 1):

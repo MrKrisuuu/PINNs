@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 
-
 class PINN(nn.Module):
     """Simple neural network accepting two features as input and returning a single output
 
@@ -25,29 +24,13 @@ class PINN(nn.Module):
         self.act = act
 
     def forward(self, *args: torch.Tensor):
-        if len(args) == 1:
-            if self.input == 1:
-                t = args[0]
-                stack = torch.cat([t], dim=1)
-            else:
-                raise Exception(f"Wrong numbers of arguments: 1, expected {self.input}.")
-        elif len(args) == 2:
-            if self.input == 2:
-                x = args[0]
-                t = args[1]
-                stack = torch.cat([x, t], dim=1)
-            else:
-                raise Exception(f"Wrong numbers of arguments: 2, expected {self.input}.")
-        elif len(args) == 3:
-            if self.input == 3:
-                x = args[0]
-                y = args[1]
-                t = args[2]
-                stack = torch.cat([x, y, t], dim=1)
-            else:
-                raise Exception(f"Wrong numbers of arguments: 3, expected {self.input}.")
-        else:
+        if len(args) != self.input:
+            raise Exception(f"Wrong numbers of dimentions: {len(args)} and {self.input}.")
+
+        if len(args) > 3:
             raise Exception(f"Too many arguments: {len(args)}, expected 1, 2 or 3.")
+
+        stack = torch.cat([*args], dim=1)
 
         out = self.act(self.layer_in(stack))
         for layer in self.middle_layers:
@@ -62,29 +45,13 @@ class PINN(nn.Module):
 
 def f(pinn, *args, output_value=0) -> torch.Tensor:
     """Compute the value of the approximate solution from the NN model"""
-    if len(args) == 1:
-        if pinn.input == 1:
-            t = args[0]
-            return pinn(t)[:, output_value:output_value+1]
-        else:
-            raise Exception(f"Wrong numbers of arguments: 1, expected {pinn.input}.")
-    elif len(args) == 2:
-        if pinn.input == 2:
-            x = args[0]
-            t = args[1]
-            return pinn(x, t)[:, output_value:output_value+1]
-        else:
-            raise Exception(f"Wrong numbers of arguments: 2, expected {pinn.input}.")
-    elif len(args) == 3:
-        if pinn.input == 3:
-            x = args[0]
-            y = args[1]
-            t = args[2]
-            return pinn(x, y, t)[:, output_value:output_value+1]
-        else:
-            raise Exception(f"Wrong numbers of arguments: 3, expected {pinn.input}.")
-    else:
+    if len(args) != pinn.input:
+        raise Exception(f"Wrong numbers of dimentions: {len(args)} and {pinn.input}.")
+
+    if len(args) > 3:
         raise Exception(f"Too many arguments: {len(args)}, expected 1, 2 or 3.")
+
+    return pinn(*args)[:, output_value:output_value+1]
 
 
 def df(output, input, order=1) -> torch.Tensor:
@@ -102,62 +69,39 @@ def df(output, input, order=1) -> torch.Tensor:
 
 
 def dfdt(pinn, *args, order=1, output_value=0):
-    if len(args) == 1:
-        if pinn.input == 1:
-            t = args[0]
-            f_value = f(pinn, t, output_value=output_value)
-        else:
-            raise Exception(f"Wrong numbers of arguments: 1, expected {pinn.input}.")
-    elif len(args) == 2:
-        if pinn.input == 2:
-            x = args[0]
-            t = args[1]
-            f_value = f(pinn, x, t, output_value=output_value)
-        else:
-            raise Exception(f"Wrong numbers of arguments: 2, expected {pinn.input}.")
-    elif len(args) == 3:
-        if pinn.input == 3:
-            x = args[0]
-            y = args[1]
-            t = args[2]
-            f_value = f(pinn, x, y, t, output_value=output_value)
-        else:
-            raise Exception(f"Wrong numbers of arguments: 3, expected {pinn.input}.")
-    else:
-        raise Exception(f"Wrong numbers of arguments: {len(args)}, expected 1, 2 or 3.")
-    return df(f_value, t, order=order)
+    if len(args) != pinn.input:
+        raise Exception(f"Wrong numbers of dimentions: {len(args)} and {pinn.input}.")
+
+    if len(args) > 3:
+        raise Exception(f"Too many arguments: {len(args)}, expected 1, 2 or 3.")
+
+    f_value = f(pinn, *args, output_value=output_value)
+
+    # t OR x, t OR x, y, t
+    return df(f_value, args[-1], order=order)
 
 
 def dfdx(pinn, *args, order=1, output_value=0):
-    if len(args) == 2:
-        if pinn.input == 2:
-            x = args[0]
-            t = args[1]
-            f_value = f(pinn, x, t, output_value=output_value)
-        else:
-            raise Exception(f"Wrong numbers of arguments: 2, expected {pinn.input}.")
-    elif len(args) == 3:
-        if pinn.input == 3:
-            x = args[0]
-            y = args[1]
-            t = args[2]
-            f_value = f(pinn, x, y, t, output_value=output_value)
-        else:
-            raise Exception(f"Wrong numbers of arguments: 3, expected {pinn.input}.")
-    else:
-        raise Exception(f"Wrong numbers of arguments: {len(args)}, expected 2 or 3.")
-    return df(f_value, x, order=order)
+    if len(args) != pinn.input:
+        raise Exception(f"Wrong numbers of dimentions: {len(args)} and {pinn.input}.")
+
+    if len(args) > 3:
+        raise Exception(f"Too many arguments: {len(args)}, expected 1, 2 or 3.")
+
+    f_value = f(pinn, *args, output_value=output_value)
+
+    # t OR x, t OR x, y, t
+    return df(f_value, args[0], order=order)
 
 
 def dfdy(pinn, *args, order=1, output_value=0):
-    if len(args) == 3:
-        if pinn.input == 3:
-            x = args[0]
-            y = args[1]
-            t = args[2]
-            f_value = f(pinn, x, y, t, output_value=output_value)
-        else:
-            raise Exception(f"Wrong numbers of arguments: 3, expected {pinn.input}.")
-    else:
-        raise Exception(f"Wrong numbers of arguments: {len(args)}, expected 3.")
-    return df(f_value, y, order=order)
+    if len(args) != pinn.input:
+        raise Exception(f"Wrong numbers of dimentions: {len(args)} and {pinn.input}.")
+
+    if len(args) > 3:
+        raise Exception(f"Too many arguments: {len(args)}, expected 1, 2 or 3.")
+
+    f_value = f(pinn, *args, output_value=output_value)
+
+    # t OR x, t OR x, y, t
+    return df(f_value, args[1], order=order)
