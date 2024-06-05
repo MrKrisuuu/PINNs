@@ -17,10 +17,10 @@ class Loss_SIR(Loss):
         t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         (_, _, _, params) = get_initial_conditions("SIR")
-        (b, y) = params
+        (b, y, N) = params
 
-        S = dfdt(pinn, t, output_value=0) + b * f(pinn, t, output_value=1) * f(pinn, t, output_value=0)
-        I = dfdt(pinn, t, output_value=1) - b * f(pinn, t, output_value=1) * f(pinn, t, output_value=0) + y * f(pinn, t, output_value=1)
+        S = dfdt(pinn, t, output_value=0) + b / N * f(pinn, t, output_value=1) * f(pinn, t, output_value=0)
+        I = dfdt(pinn, t, output_value=1) - b / N * f(pinn, t, output_value=1) * f(pinn, t, output_value=0) + y * f(pinn, t, output_value=1)
         R = dfdt(pinn, t, output_value=2) - y * f(pinn, t, output_value=1)
 
         loss = S.pow(2) + I.pow(2) + R.pow(2)

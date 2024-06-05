@@ -1,5 +1,4 @@
-from PINN import PINN, f, dfdx, dfdy, dfdt
-from get_points import get_boundary_points, get_initial_points, get_interior_points
+from PINN import PINN
 import torch
 
 
@@ -13,8 +12,9 @@ class Loss:
             weight_b=1.0,
             weight_i=1.0,
             weight_h=1.0,
+            invariant=False,
 
-            invariant=False
+            **kwargs
     ):
         self.args = args
 
@@ -27,63 +27,19 @@ class Loss:
 
         self.invariant = invariant
 
-    def residual_loss(self, pinn: PINN):
-        """
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-        """
-        return torch.tensor(0)
+    def residual_loss(self, pinn):
+        return torch.tensor(0).to(pinn.device())
 
-    def initial_loss(self, pinn: PINN):
-        """
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-        """
-        return torch.tensor(0)
+    def initial_loss(self, pinn):
+        return torch.tensor(0).to(pinn.device())
 
-    def boundary_loss(self, pinn: PINN):
-        """
-        down, up, left, right, t = None, None, None, None, None
-        if len(self.args) == 1:
-            (t,) = get_boundary_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            down, up = get_boundary_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            down, up, left, right = get_boundary_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-        """
-        return torch.tensor(0)
+    def boundary_loss(self, pinn):
+        return torch.tensor(0).to(pinn.device())
 
-    def invariant_loss(self, pinn: PINN):
-        """
-        x, y, t = None, None, None
-        if len(self.args) == 1:
-            t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 2:
-            x, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        elif len(self.args) == 3:
-            x, y, t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
-        else:
-            raise Exception(f"Too many arguments: {len(self.args)}, expected 1, 2 or 3.")
-        """
-        return torch.tensor(0)
+    def invariant_loss(self, pinn):
+        return torch.tensor(0).to(pinn.device())
 
-    def verbose(self, pinn: PINN):
+    def verbose(self, pinn):
         """
         Returns all parts of the loss function
 

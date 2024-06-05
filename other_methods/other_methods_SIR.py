@@ -6,26 +6,26 @@ from constants.initial_conditions import get_initial_conditions
 
 
 def fS(s, i, r, params):
-    b, y = params
-    return - b * i * s
+    b, y, N = params
+    return - b / N * i * s
 
 
 def fI(s, i, r, params):
-    b, y = params
-    return b * i * s - y * i
+    b, y, N = params
+    return b / N * i * s - y * i
 
 
 def fR(s, i, r, params):
-    b, y = params
+    b, y, N = params
     return y * i
 
 
 def SIR_equation(values, previous, h, params):
     s_n1, i_n1, r_n1 = values
     s_n, i_n, r_n = previous
-    b, y = params
-    S = s_n1 - s_n + h * b * i_n1 * s_n1
-    I = i_n1 - i_n - h * b * i_n1 * s_n1 + h * y * i_n1
+    b, y, N = params
+    S = s_n1 - s_n + h * b / N * i_n1 * s_n1
+    I = i_n1 - i_n - h * b / N * i_n1 * s_n1 + h * y * i_n1
     R = r_n1 - r_n - h * y * i_n1
     return [S, I, R]
 

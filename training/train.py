@@ -36,9 +36,8 @@ def pretrain_model(nn_approximator, input, target, loss_fn, epochs=1_000):
     return best_model, np.array(loss_values)
 
 
-def train_model(nn_approximator, loss_fn, epochs=1_000):
-    optimizer = torch.optim.Adam(nn_approximator.parameters())
-    #optimizer = torch.optim.LBFGS(nn_approximator.parameters())
+def train_model(nn_approximator, loss_fn, epochs=1_000, optim=torch.optim.Adam):
+    optimizer = optim(nn_approximator.parameters())
     loss_values = []
     min_loss = 10000000000
     best_model = deepcopy(nn_approximator)

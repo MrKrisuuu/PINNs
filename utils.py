@@ -1,5 +1,6 @@
 import torch
 
+
 def get_derivatives(values, h):
     derivatives = [(-values[2] + 3*values[1] - 2*values[0]) / h]
     for i in range(1, len(values) - 1):
@@ -9,7 +10,7 @@ def get_derivatives(values, h):
 
 
 def get_values_from_pinn(pinn, times):
-    values = pinn(times.reshape(-1, 1)).detach().cpu().numpy()
+    values = pinn(times.reshape(-1, 1).to(pinn.device())).detach().cpu().numpy()
     results = []
     for i in range(len(values[0])):
         value = torch.tensor(values[:, i])

@@ -33,28 +33,20 @@ def running_average(values, window=100):
 def plot_loss(loss_values, window=100, title="problem", save="loss"):
     lines = []
     epochs = []
-    if isinstance(loss_values, tuple):
-        average_loss_total = running_average(loss_values[0][:, 0], window=window)
-        average_loss_residual = running_average(loss_values[0][:, 1], window=window)
-        average_loss_initial = running_average(loss_values[0][:, 2], window=window)
-        average_loss_boundary = running_average(loss_values[0][:, 3], window=window)
-        average_loss_invariant = running_average(loss_values[0][:, 4], window=window)
-        epochs += list(range(len(average_loss_total)))
-        for loss in loss_values[1:]:
-            lines.append(len(average_loss_total)-1)
-            average_loss_total = np.concatenate((average_loss_total, running_average(loss[:, 0], window=window)))
-            average_loss_residual = np.concatenate((average_loss_residual, running_average(loss[:, 1], window=window)))
-            average_loss_initial = np.concatenate((average_loss_initial, running_average(loss[:, 2], window=window)))
-            average_loss_boundary = np.concatenate((average_loss_boundary, running_average(loss[:, 3], window=window)))
-            average_loss_invariant = np.concatenate((average_loss_invariant, running_average(loss[:, 4], window=window)))
-            epochs += list(range(len(epochs)-1, len(average_loss_total)-1))
-    else:
-        average_loss_total = running_average(loss_values[:, 0], window=window)
-        average_loss_residual = running_average(loss_values[:, 1], window=window)
-        average_loss_initial = running_average(loss_values[:, 2], window=window)
-        average_loss_boundary = running_average(loss_values[:, 3], window=window)
-        average_loss_invariant = running_average(loss_values[:, 4], window=window)
-        epochs += list(range(len(average_loss_total)))
+    average_loss_total = running_average(loss_values[0][:, 0], window=window)
+    average_loss_residual = running_average(loss_values[0][:, 1], window=window)
+    average_loss_initial = running_average(loss_values[0][:, 2], window=window)
+    average_loss_boundary = running_average(loss_values[0][:, 3], window=window)
+    average_loss_invariant = running_average(loss_values[0][:, 4], window=window)
+    epochs += list(range(len(average_loss_total)))
+    for loss in loss_values[1:]:
+        lines.append(len(average_loss_total)-1)
+        average_loss_total = np.concatenate((average_loss_total, running_average(loss[:, 0], window=window)))
+        average_loss_residual = np.concatenate((average_loss_residual, running_average(loss[:, 1], window=window)))
+        average_loss_initial = np.concatenate((average_loss_initial, running_average(loss[:, 2], window=window)))
+        average_loss_boundary = np.concatenate((average_loss_boundary, running_average(loss[:, 3], window=window)))
+        average_loss_invariant = np.concatenate((average_loss_invariant, running_average(loss[:, 4], window=window)))
+        epochs += list(range(len(epochs)-1, len(average_loss_total)-1))
 
     max_height = np.max(average_loss_total)
     min_height = max_height
@@ -100,10 +92,10 @@ def plot_compare_loss(losses, names, save="loss", window=100):
     plt.show()
 
 
-def plot_1D(pinn, t, ylabel="Values", labels=None, title="problem", save="plot"):
+def plot_1D(pinn, t, xlabel="Time", ylabel="Values", labels=None, title="problem", save="plot"):
     plt.plot(t.detach().cpu().numpy(), pinn(t).detach().cpu().numpy(), label=labels)
     plt.title(f"Result for {title} by PINN" )
-    plt.xlabel("Time")
+    plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if labels:
         plt.legend()
@@ -125,12 +117,12 @@ def plot_1D_in_2D(pinn, t, title="1D_2D", save="1D_2D"):
     plt.show()
 
 
-def plot_compare(data, time, labels, title="", ylabel="Values", save="compare"):
+def plot_compare(data, time, labels, title="", xlabel="Time", ylabel="Values", save="compare"):
     for points, label in zip(data, labels):
         plt.plot(time, points, label=label)
 
     plt.title(title)
-    plt.xlabel("Time")
+    plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
     plt.grid(True)
