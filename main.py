@@ -15,30 +15,30 @@ if __name__ == "__main__":
     y_domain_Heat = [0, 1]
     t_domain_Heat = [0, 0.1]
 
-    # loss_SIR, best_pinn_SIR, loss_values_SIR = train_SIR(t_domain_SIR, epochs=1000)
-    # test_SIR(loss_SIR, best_pinn_SIR, loss_values_SIR, t_domain_SIR)
-    #
-    # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, epochs=50000)
-    # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler)
-    #
-    # loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, epochs=20000)
-    # test_LV(loss_LV, best_pinn_LV, loss_values_LV, t_domain_LV)
-    #
-    # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, epochs=50000)
-    # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod=[" with Invariant loss", "_invariant"])
-    #
-    # loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, invariant=True, epochs=20000)
-    # test_LV(loss_LV, best_pinn_LV, loss_values_LV, t_domain_LV, mod=[" with Invariant loss", "_invariant"])
-    #
-    # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, pretrain_epochs=10000, epochs=50000)
-    # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod=[" with pre-training", "_pre"])
-    #
-    # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, epochs=20000, pretrain_epochs=10000, LBFGS_epochs=10000)
-    # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod=[" with L-BFGS", "_LBFGS"])
+    loss_SIR, best_pinn_SIR, loss_values_SIR = train_SIR(t_domain_SIR, epochs=1000)
+    test_SIR(loss_SIR, best_pinn_SIR, loss_values_SIR, t_domain_SIR)
 
-    # loss_Poisson, best_pinn_Poisson, loss_values_Poisson = train_Poisson(t_domain_Poisson, LBFGS_epochs=20, epochs=50)
-    # test_Poisson(loss_Poisson, best_pinn_Poisson, loss_values_Poisson, t_domain_Poisson)
+    loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, epochs=50000)
+    test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler)
 
-    loss_Heat, best_pinn_Heat, loss_values_Heat = train_Heat(x_domain_Heat, y_domain_Heat, t_domain_Heat, LBFGS_epochs=200, invariant=True, epochs=500)
+    loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, epochs=20000)
+    test_LV(loss_LV, best_pinn_LV, loss_values_LV, t_domain_LV)
+
+    loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, epochs=50000)
+    test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod=[" with Invariant loss", "_invariant"])
+
+    loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, invariant=True, epochs=20000)
+    test_LV(loss_LV, best_pinn_LV, loss_values_LV, t_domain_LV, mod=[" with Invariant loss", "_invariant"])
+
+    loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, pretrain_epochs=10000, epochs=50000)
+    test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod=[" with pre-training", "_pre"])
+
+    loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, epochs=20000, pretrain_epochs=10000, LBFGS_epochs=10000)
+    test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod=[" with L-BFGS", "_LBFGS"])
+
+    loss_Poisson, best_pinn_Poisson, loss_values_Poisson = train_Poisson(t_domain_Poisson, LBFGS_epochs=2000, epochs=5000)
+    test_Poisson(loss_Poisson, best_pinn_Poisson, loss_values_Poisson, t_domain_Poisson)
+
+    loss_Heat, best_pinn_Heat, loss_values_Heat = train_Heat(x_domain_Heat, y_domain_Heat, t_domain_Heat, LBFGS_epochs=20000, invariant=True, epochs=50000)
     test_Heat(loss_Heat, best_pinn_Heat, loss_values_Heat, x_domain_Heat, y_domain_Heat, t_domain_Heat)
 
