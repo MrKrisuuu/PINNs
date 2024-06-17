@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 import imageio
-import numpy as np
+import os
 
 
 def plot_2D(pinn, x, t, name="2D"):
@@ -15,6 +15,8 @@ def plot_2D(pinn, x, t, name="2D"):
         plt.xlabel("X")
         plt.ylabel("Y")
         plt.grid(True)
+        if not os.path.exists("./plot2D"):
+            os.makedirs("./plot2D")
         plt.savefig(f"./plot2D/{time}.png")
         files.append(f"./plot2D/{time}.png")
         plt.clf()
@@ -39,6 +41,8 @@ def plot_3D(pinn, x, y, t, name="3D"):
                         pinn(x_grid.reshape(-1, 1), y_grid.reshape(-1, 1), t0.reshape(-1, 1)).detach().cpu().numpy().reshape(x_grid.shape))
         time = round(t_raw.item(), 3)
         plt.title(f"Step PINN: {time}")
+        if not os.path.exists("./plot3D"):
+            os.makedirs("./plot3D")
         plt.savefig(f"./plot3D/{time}.png")
         files.append(f"./plot3D/{time}.png")
         plt.clf()
@@ -62,6 +66,8 @@ def plot_3D_IGA(values, name="3D"):
         ax.plot_surface(x.reshape(N, N), y.reshape(N, N), z.reshape(N, N))
         time = round(t0, 3)
         plt.title(f"Step IGA-ADS: {time}")
+        if not os.path.exists("./plot3D_IGA"):
+            os.makedirs("./plot3D_IGA")
         plt.savefig(f"./plot3D_IGA/{time}.png")
         files.append(f"./plot3D_IGA/{time}.png")
         plt.clf()

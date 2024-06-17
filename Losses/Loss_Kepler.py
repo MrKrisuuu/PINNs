@@ -4,6 +4,8 @@ from Losses.Loss import Loss
 from constants.initial_conditions import get_initial_conditions
 from constants.constants_Kepler import get_Kepler_start_energy, get_Kepler_energy, get_Kepler_start_moment, get_Kepler_moment
 
+import torch
+
 
 class Loss_Kepler(Loss):
     def __init__(self, *args, **kwargs):
@@ -27,12 +29,12 @@ class Loss_Kepler(Loss):
     def initial_loss(self, pinn):
         t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
 
-        (X, Y, dX, dY) = get_initial_conditions("Kepler")
+        (y, _) = get_initial_conditions("Kepler")
 
-        cx1 = f(pinn, t, output_value=0) - X[0]
-        cx2 = dfdt(pinn, t, output_value=0) - dX
-        cy1 = f(pinn, t, output_value=1) - Y[0]
-        cy2 = dfdt(pinn, t, output_value=1) - dY
+        cx1 = f(pinn, t, output_value=0) - y[0]
+        cy1 = f(pinn, t, output_value=1) - y[1]
+        cx2 = dfdt(pinn, t, output_value=0) - y[2]
+        cy2 = dfdt(pinn, t, output_value=1) - y[3]
 
         return cx1.pow(2).mean() + cx2.pow(2).mean() + cy1.pow(2).mean() + cy2.pow(2).mean()
 
@@ -40,11 +42,13 @@ class Loss_Kepler(Loss):
         t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
         X = f(pinn, t, output_value=0)
-        dX = dfdt(pinn, t, output_value=0)
         Y = f(pinn, t, output_value=1)
+        dX = dfdt(pinn, t, output_value=0)
         dY = dfdt(pinn, t, output_value=1)
 
-        invariant1 = get_Kepler_energy(X, Y, dX, dY) - get_Kepler_start_energy()
-        invariant2 = get_Kepler_moment(X, Y, dX, dY) - get_Kepler_start_moment()
+        r = torch.concat((X, Y, dX, dY), dim=1)
+
+        invariant1 = get_Kepler_energy(r) - get_Kepler_start_energy()
+        invariant2 = get_Kepler_moment(r) - get_Kepler_start_moment()
 
         return invariant1.pow(2).mean() + invariant2.pow(2).mean()

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 
 def print_loss(loss, pinn):
@@ -74,6 +75,8 @@ def plot_loss(loss_values, window=100, title="problem", save="loss"):
     plt.yscale("log")
     plt.legend()
     plt.grid(True)
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
     plt.savefig(f"./results/{save}.png")
     plt.show()
 
@@ -88,6 +91,8 @@ def plot_compare_loss(losses, names, save="loss", window=100):
     plt.yscale("log")
     plt.legend()
     plt.grid(True)
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
     plt.savefig(f"./results/{save}.png")
     plt.show()
 
@@ -100,6 +105,8 @@ def plot_1D(pinn, t, xlabel="Time", ylabel="Values", labels=None, title="problem
     if labels:
         plt.legend()
     plt.grid(True)
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
     plt.savefig(f"./results/{save}.png")
     plt.show()
 
@@ -113,19 +120,22 @@ def plot_1D_in_2D(pinn, t, title="1D_2D", save="1D_2D"):
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.grid(True)
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
     plt.savefig(f"./results/{save}.png")
     plt.show()
 
 
 def plot_compare(data, time, labels, title="", xlabel="Time", ylabel="Values", save="compare"):
     for points, label in zip(data, labels):
-        plt.plot(time, points, label=label)
-
+        plt.plot(time.detach().cpu().numpy(), points.detach().cpu().numpy(), label=label)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
     plt.grid(True)
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
     plt.savefig(f"./results/{save}.png")
     plt.show()
 
@@ -140,5 +150,7 @@ def plot_difference(data, time, true, labels, title="", ylabel="Values", save="c
     plt.ylabel(ylabel)
     plt.legend()
     plt.grid(True)
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
     plt.savefig(f"./results/{save}.png")
     plt.show()

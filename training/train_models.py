@@ -8,14 +8,15 @@ from Losses.Loss_LV import Loss_LV
 from Losses.Loss_Poisson import Loss_Poisson
 from Losses.Loss_Heat import Loss_Heat
 from training.train import pretrain_model, train_model, device
+from utils import get_times
+from constants.initial_conditions import get_initial_conditions
 
-from other_methods.other_methods_SIR import euler_SIR
-from other_methods.other_methods_Kepler import euler_Kepler
-from other_methods.other_methods_Lotka_Volterra import euler_LV
+from other_methods.methods import euler
 from other_methods.other_methods_Poisson import FEM_Poisson
+from other_methods.equations import SIR, Kepler, LV
 
 
-def train(pinn, loss, epochs=10000, pretrain_epochs=None, LBFGS_epochs=None, pre_func=None, pre_args=None):
+def train(pinn, loss, epochs=10000, pretrain_epochs=None, LBFGS_epochs=None, pre_func=None, pre_args=None, half=False):
     loss_values = []
     adam_epochs = epochs
     if pretrain_epochs:
@@ -24,11 +25,11 @@ def train(pinn, loss, epochs=10000, pretrain_epochs=None, LBFGS_epochs=None, pre
         adam_epochs -= LBFGS_epochs
 
     if pretrain_epochs:
-        result_pre = pre_func(*pre_args)
-        times = result_pre[-1]
-        results = torch.stack(result_pre[:-1], dim=1).to(pinn.device())
-        times = times.reshape(-1, 1).to(device)
-        pinn, loss_values_pre = pretrain_model(pinn, times, results, loss, epochs=pretrain_epochs)
+        result = pre_func(*pre_args)
+        if half:
+            result = result[:, :len(result[0])//2]
+        (_, times, _, _) = pre_args
+        pinn, loss_values_pre = pretrain_model(pinn, times.reshape(-1, 1).to(pinn.device()), result.to(pinn.device()), loss, epochs=pretrain_epochs)
         loss_values.append(loss_values_pre)
 
     if adam_epochs:
@@ -52,7 +53,9 @@ def train_SIR(t_domain, epochs=1000, pretrain_epochs=None, LBFGS_epochs=None, in
         invariant=invariant
     )
 
-    loss, best_pinn, loss_values = train(pinn, loss, epochs, pretrain_epochs, LBFGS_epochs, pre_func=euler_SIR, pre_args=(t_domain[1], ))
+    times = get_times(t_domain[1], 0.01)
+    (y0, params) = get_initial_conditions("SIR")
+    loss, best_pinn, loss_values = train(pinn, loss, epochs, pretrain_epochs, LBFGS_epochs, pre_func=euler, pre_args=(SIR, times, y0, params))
 
     return loss, best_pinn, loss_values
 
@@ -65,7 +68,9 @@ def train_Kepler(t_domain, epochs=50000, pretrain_epochs=None, LBFGS_epochs=None
         invariant=invariant
     )
 
-    loss, best_pinn, loss_values = train(pinn, loss, epochs, pretrain_epochs, LBFGS_epochs, pre_func=euler_Kepler, pre_args=(t_domain[1], ))
+    times = get_times(t_domain[1], 0.01)
+    (y0, params) = get_initial_conditions("Kepler")
+    loss, best_pinn, loss_values = train(pinn, loss, epochs, pretrain_epochs, LBFGS_epochs, pre_func=euler, pre_args=(Kepler, times, y0, params), half=True)
 
     return loss, best_pinn, loss_values
 
@@ -78,7 +83,9 @@ def train_LV(t_domain, epochs=20000, pretrain_epochs=None, LBFGS_epochs=None, in
         invariant=invariant
     )
 
-    loss, best_pinn, loss_values = train(pinn, loss, epochs, pretrain_epochs, LBFGS_epochs, pre_func=euler_LV, pre_args=(t_domain[1], ))
+    times = get_times(t_domain[1], 0.01)
+    (y0, params) = get_initial_conditions("LV")
+    loss, best_pinn, loss_values = train(pinn, loss, epochs, pretrain_epochs, LBFGS_epochs, pre_func=euler, pre_args=(LV, times, y0, params))
 
     return loss, best_pinn, loss_values
 
@@ -96,7 +103,7 @@ def train_Poisson(t_domain, epochs=5000, pretrain_epochs=None, LBFGS_epochs=None
     return loss, best_pinn, loss_values
 
 
-def train_Heat(x_domain_Heat, y_domain_Heat, t_domain_Heat, epochs=10000, pretrain_epochs=None, LBFGS_epochs=None, invariant=False):
+def train_Heat(x_domain_Heat, y_domain_Heat, t_domain_Heat, epochs=50000, pretrain_epochs=None, LBFGS_epochs=None, invariant=False):
     pinn = PINN(3, 1).to(device)
 
     loss = Loss_Heat(

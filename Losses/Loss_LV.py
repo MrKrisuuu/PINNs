@@ -17,7 +17,7 @@ class Loss_LV(Loss):
     def residual_loss(self, pinn):
         t = get_interior_points(*self.args, n_points=self.n_points, device=pinn.device())
 
-        (_, _, params) = get_initial_conditions("LV")
+        (_, params) = get_initial_conditions("LV")
         a, b, c, d = params
 
         prey = dfdt(pinn, t, output_value=0) - (a - b * f(pinn, t, output_value=1)) * f(pinn, t, output_value=0)
@@ -30,10 +30,10 @@ class Loss_LV(Loss):
     def initial_loss(self, pinn):
         t = get_initial_points(*self.args, n_points=self.n_points, device=pinn.device())
 
-        (X, Y, _) = get_initial_conditions("LV")
+        (y, _) = get_initial_conditions("LV")
 
-        prey = f(pinn, t, output_value=0) - X[0]
-        predtor = f(pinn, t, output_value=1) - Y[0]
+        prey = f(pinn, t, output_value=0) - y[0]
+        predtor = f(pinn, t, output_value=1) - y[1]
 
         loss = prey.pow(2) + predtor.pow(2)
 
@@ -45,4 +45,6 @@ class Loss_LV(Loss):
         X = f(pinn, t, output_value=0)
         Y = f(pinn, t, output_value=1)
 
-        return (get_LV_c(X, Y) - get_LV_start_c()).pow(2).mean()
+        r = torch.cat((X, Y), dim=1)
+
+        return (get_LV_c(r) - get_LV_start_c()).pow(2).mean()

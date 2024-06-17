@@ -3,23 +3,24 @@ import torch
 
 def get_initial_conditions(problem):
     if problem == "SIR":
-        S = [0.9]
-        I = [0.1]
-        R = [0.0]
-        params = (2, 1, S[0]+I[0]+R[0])
-        return (S, I, R, params)
+        S = 0.9
+        I = 0.1
+        R = 0.0
+        params = (2, 1, S+I+R)
+        return (torch.tensor([S, I, R]), params)
     elif problem == "Kepler":
-        X = [1]
-        Y = [0]
+        X = 1
+        Y = 0
         dX = 0
         dY = 1
         # GM = 1
-        return (X, Y, dX, dY)
+        params = None
+        return (torch.tensor([X, Y, dX, dY]), params)
     elif problem == "LV":
-        X = [1]
-        Y = [1]
+        X = 1
+        Y = 1
         params = (1, 1, 1, 2)
-        return (X, Y, params)
+        return (torch.tensor([X, Y]), params)
     elif problem == "Poisson":
         x1 = 5
         x2 = 4

@@ -3,22 +3,22 @@ import torch
 
 
 def get_SIR_start_sum():
-    (_, _, _, params) = get_initial_conditions("SIR")
+    (y, params) = get_initial_conditions("SIR")
     (_, _, N) = params
     return N
 
 
-def get_SIR_sum(S, I, R):
-    return S + I + R
+def get_SIR_sum(y):
+    return y[:, 0] + y[:, 1] + y[:, 2]
 
 
 def get_SIR_start_constant():
-    (S, I, R, params) = get_initial_conditions("SIR")
-    (b, y, N) = params
-    return y*torch.log(torch.tensor(S[0])) + b*R[0]
+    (y, params) = get_initial_conditions("SIR")
+    (b, g, N) = params
+    return g*torch.log(y[0]) + b*y[2]
 
 
-def get_SIR_constant(S, I, R):
-    (_, _, _, params) = get_initial_conditions("SIR")
-    (b, y, N) = params
-    return y*torch.log(S) + b*R
+def get_SIR_constant(y):
+    (_, params) = get_initial_conditions("SIR")
+    (b, g, N) = params
+    return g*torch.log(y[:, 0]) + b*y[:, 2]

@@ -14,7 +14,7 @@ def pretrain_model(nn_approximator, input, target, loss_fn, epochs=1_000):
     best_model = deepcopy(nn_approximator)
     for epoch in range(0, epochs + 1):
         output = nn_approximator(input)
-        loss_pre = ((output - target) ** 2).mean()
+        loss_pre = (output - target).pow(2).mean()
 
         loss, residual_loss, initial_loss, boundary_loss, help_loss = loss_fn(nn_approximator)
         loss_values.append(
