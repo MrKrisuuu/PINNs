@@ -31,7 +31,7 @@ def running_average(values, window=100):
     return np.array(avgs)
 
 
-def plot_loss(loss_values, window=100, title="problem", save="loss"):
+def plot_loss(loss_values, window=100, save="loss"):
     lines = []
     epochs = []
     average_loss_total = running_average(loss_values[0][:, 0], window=window)
@@ -69,7 +69,6 @@ def plot_loss(loss_values, window=100, title="problem", save="loss"):
     for line in lines:
         plt.plot([line, line], [10*max_height, min_height/10], color="black", linewidth=2)
 
-    plt.title(f"Loss function for {title} (running average)")
     plt.xlabel("Epoch")
     plt.ylabel("Loss value")
     plt.yscale("log")
@@ -85,7 +84,6 @@ def plot_compare_loss(losses, names, save="loss", window=100):
     for loss, name in zip(losses, names):
         plt.plot(running_average(loss[:, 0], window=window), range(len(loss[:, 0] + 1)), label=name)
 
-    plt.title("Loss function of (running average)")
     plt.xlabel("Epoch")
     plt.ylabel("Loss value")
     plt.yscale("log")
@@ -97,9 +95,8 @@ def plot_compare_loss(losses, names, save="loss", window=100):
     plt.show()
 
 
-def plot_1D(pinn, t, xlabel="Time", ylabel="Values", labels=None, title="problem", save="plot"):
+def plot_1D(pinn, t, xlabel="Time", ylabel="Values", labels=None, save="plot"):
     plt.plot(t.detach().cpu().numpy(), pinn(t).detach().cpu().numpy(), label=labels)
-    plt.title(f"Result for {title} by PINN" )
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     if labels:
@@ -111,12 +108,11 @@ def plot_1D(pinn, t, xlabel="Time", ylabel="Values", labels=None, title="problem
     plt.show()
 
 
-def plot_1D_in_2D(pinn, t, title="1D_2D", save="1D_2D"):
+def plot_1D_in_2D(pinn, t, save="1D_2D"):
     data = pinn(t).detach().cpu().numpy()
     x = data[:, 0]
     y = data[:, 1]
     plt.plot(x, y)
-    plt.title(title)
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.grid(True)
@@ -126,10 +122,9 @@ def plot_1D_in_2D(pinn, t, title="1D_2D", save="1D_2D"):
     plt.show()
 
 
-def plot_compare(data, time, labels, title="", xlabel="Time", ylabel="Values", save="compare"):
+def plot_compare(data, time, labels, xlabel="Time", ylabel="Values", save="compare"):
     for points, label in zip(data, labels):
         plt.plot(time.detach().cpu().numpy(), points.detach().cpu().numpy(), label=label)
-    plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
@@ -140,12 +135,11 @@ def plot_compare(data, time, labels, title="", xlabel="Time", ylabel="Values", s
     plt.show()
 
 
-def plot_difference(data, time, true, labels, title="", ylabel="Values", save="compare"):
+def plot_difference(data, time, true, labels, ylabel="Error", save="compare"):
     plt.plot([min(time), max(time)], [0, 0], color="black", linewidth=1)
     for points, label in zip(data, labels):
         plt.plot(time, points - true, label=label)
 
-    plt.title(title)
     plt.xlabel("Time")
     plt.ylabel(ylabel)
     plt.legend()

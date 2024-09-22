@@ -27,9 +27,6 @@ def pretrain_model(nn_approximator, input, target, loss_fn, epochs=1_000):
         elif (epoch) % 100 == 0:
             print(f"Epoch of pretrain: {epoch} - Loss: {float(loss):>7f}")
 
-        if min_loss > float(loss):
-            best_model = deepcopy(nn_approximator)
-
         optimizer.zero_grad()
         loss_pre.backward()
         optimizer.step()
@@ -41,7 +38,7 @@ def train_model(nn_approximator, loss_fn, epochs=1_000, optim=torch.optim.Adam):
     loss_values = []
     min_loss = 10000000000
     best_model = deepcopy(nn_approximator)
-    for epoch in range(0, epochs):
+    for epoch in range(0, epochs+1):
         loss, residual_loss, initial_loss, boundary_loss, help_loss = loss_fn(nn_approximator)
         loss_values.append(
             [loss.item(), residual_loss.item(), initial_loss.item(), boundary_loss.item(), help_loss.item()])
@@ -56,9 +53,4 @@ def train_model(nn_approximator, loss_fn, epochs=1_000, optim=torch.optim.Adam):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step(lambda: loss)
-
-    loss, residual_loss, initial_loss, boundary_loss, help_loss = loss_fn(nn_approximator)
-    loss_values.append(
-        [loss.item(), residual_loss.item(), initial_loss.item(), boundary_loss.item(), help_loss.item()])
-
     return best_model, np.array(loss_values)

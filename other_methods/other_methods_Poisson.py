@@ -2,6 +2,7 @@ from constants.initial_conditions import get_initial_conditions
 
 from scipy.integrate import quad
 import torch
+import time
 
 BEGIN = 0
 END = 3
@@ -67,7 +68,7 @@ def L(j, n):
 
 
 def FEM_Poisson(points, n=300):
-    # start = time.time()
+    start = time.time()
     M = [[None for _ in range(n+2)] for _ in range(n+1)]
 
     for i in range(n+1):
@@ -120,7 +121,7 @@ def FEM_Poisson(points, n=300):
         x = 0
         y = 0
 
-    # print(round(time.time() - start, 3))
+    print(f"Time for Poisson: {round(time.time() - start, 3)} ")
     return torch.tensor(Ys), torch.tensor(Xs)
     # p = torch.linspace(0, 3, 1001)
     # return torch.tensor([e(n, x, n) for x in p]), p

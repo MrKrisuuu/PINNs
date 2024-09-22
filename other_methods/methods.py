@@ -1,6 +1,7 @@
 import torch
 import scipy
 import numpy as np
+import time
 
 
 def euler(f, t, y0, params=()):
@@ -25,6 +26,7 @@ def implicit_euler(f, t, y0, params=()):
 
 
 def rk4(f, t, y0, params=()):
+    start = time.time()
     n = len(t)
     y = torch.zeros((n, len(y0)))
     y[0] = y0
@@ -35,6 +37,7 @@ def rk4(f, t, y0, params=()):
         k3 = f(t[i] + h / 2, y[i] + h * k2 / 2, params)
         k4 = f(t[i] + h, y[i] + h * k3, params)
         y[i + 1] = y[i] + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    print(f"Time for RK4 for {f.__name__}: {round(time.time() - start, 3)} ")
     return y
 
 
