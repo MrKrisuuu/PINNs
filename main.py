@@ -21,23 +21,23 @@ if __name__ == "__main__":
     # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, epochs=50000)
     # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler)
     #
-    # loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, epochs=20000)
+    # loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, epochs=20)
     # test_LV(loss_LV, best_pinn_LV, loss_values_LV, t_domain_LV)
     #
     # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, epochs=50000)
     # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod="_invariant")
     #
-    loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, invariant=True, epochs=20000)
-    test_LV(loss_LV, best_pinn_LV, loss_values_LV, t_domain_LV, mod="_invariant")
+    # loss_LV, best_pinn_LV, loss_values_LV = train_LV(t_domain_LV, invariant=True, epochs=20000)
+    # test_LV(loss_LV, best_pinn_LV, loss_values_LV, t_domain_LV, mod="_invariant")
     #
     # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, pretrain_epochs=10000, epochs=50000)
     # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod="_pre")
     #
     # loss_Kepler, best_pinn_Kepler, loss_values_Kepler = train_Kepler(t_domain_Kepler, invariant=True, epochs=20000, pretrain_epochs=10000, LBFGS_epochs=10000)
     # test_Kepler(loss_Kepler, best_pinn_Kepler, loss_values_Kepler, t_domain_Kepler, mod="_LBFGS")
-
+    #
     # loss_Poisson, best_pinn_Poisson, loss_values_Poisson = train_Poisson(t_domain_Poisson, LBFGS_epochs=2000, epochs=5000)
     # test_Poisson(loss_Poisson, best_pinn_Poisson, loss_values_Poisson, t_domain_Poisson)
     #
-    loss_Heat, best_pinn_Heat, loss_values_Heat = train_Heat(x_domain_Heat, y_domain_Heat, t_domain_Heat, LBFGS_epochs=20000, invariant=True, epochs=50000)
-    test_Heat(loss_Heat, best_pinn_Heat, loss_values_Heat, x_domain_Heat, y_domain_Heat, t_domain_Heat)
+    # loss_Heat, best_pinn_Heat, loss_values_Heat = train_Heat(x_domain_Heat, y_domain_Heat, t_domain_Heat, LBFGS_epochs=20000, invariant=True, epochs=50000)
+    # test_Heat(loss_Heat, best_pinn_Heat, loss_values_Heat, x_domain_Heat, y_domain_Heat, t_domain_Heat)

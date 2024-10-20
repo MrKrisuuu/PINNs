@@ -109,10 +109,10 @@ def test_Kepler(loss, pinn, loss_values, t_domain, h=0.001, mod=""):
 def test_LV(loss, pinn, loss_values, t_domain, h=0.001, mod=""):
     # Result of training
     print_loss(loss, pinn)
-    plot_loss(loss_values, save=f"LV{mod[1]}_loss")
+    plot_loss(loss_values, save=f"LV{mod}_loss")
     t = torch.linspace(t_domain[0], t_domain[1], 1001).reshape(-1, 1).to(pinn.device())
     t.requires_grad = True
-    plot_1D(pinn, t, labels=["X", "Y"], ylabel="Population", save=f"LV{mod}_pinn_result")
+    plot_1D(pinn, t, labels=["Preys", "Predators"], ylabel="Population", save=f"LV{mod}_pinn_result")
 
     times = get_times(t_domain[1], h)
 
